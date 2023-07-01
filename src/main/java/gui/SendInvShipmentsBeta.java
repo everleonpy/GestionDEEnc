@@ -53,9 +53,9 @@ public class SendInvShipmentsBeta extends JFrame {
 	private JLabel jlAction1 = null;
 	private JLabel jlAction2 = null;
 	private JLabel jlAction3 = null;
-	private JLabel jlAction4 = null;
-	private JLabel jlAction5 = null;
-	private JLabel jlAction6 = null;
+	//private JLabel jlAction4 = null;
+	//private JLabel jlAction5 = null;
+	//private JLabel jlAction6 = null;
 	
 	// bloque de filtro
 	private JLabel jlDate;
@@ -290,145 +290,13 @@ public class SendInvShipmentsBeta extends JFrame {
 			jlAction1 = new JLabel();
 			jlAction1.setSize(new Dimension(tbtnWidth, tbtnHeight));
 			jlAction1.setLocation(new Point(xPos, 1));
-			jlAction1.setText(" Ver Remisiones");
+			jlAction1.setText(" Enviar");
 			jlAction1.setBackground(appLook.getMenuBg());
 			jlAction1.setForeground(appLook.getMenuFg());
 			jlAction1.setFont(appLook.getSmallFont());
 			jlAction1.setOpaque(true);
 			jlAction1.setHorizontalAlignment(SwingConstants.LEFT);
 			jlAction1.addMouseListener(new MouseAdapter() {  
-				public void mouseClicked(MouseEvent e) {  
-					if (ctrl.getTrxDate() == null) {
-						ErrorMessageWindow x = new ErrorMessageWindow(null, "Debe indicar la fecha para listar las remisiones");
-						x.setVisible(true);			    	        				    	    				    	    	
-					} else {
-						boolean viewTrx = true;
-						// determinar si existen transacciones de tipo factura en el rango de fechas
-						ctrl.findShipmentsCount();
-						if (ctrl.getShipmentsQty() == 0) {
-							viewTrx = false;
-							ErrorMessageWindow x = new ErrorMessageWindow(null, "No existen remisiones para estos filtros");
-							x.setVisible(true);	
-						}
-						//
-						if (viewTrx == true) {
-							// asignar valores por defecto a las transacciones
-							ctrl.defaultTrxValues();
-							// consultar las transacciones
-							queryShipments();
-						}
-					}  
-				}
-				public void mouseEntered (MouseEvent evt) {
-					jlAction1.setBackground(appLook.getSelMenuBg());
-					jlAction1.setForeground(appLook.getSelMenuFg());
-					jlAction1.repaint();
-				}
-				public void mouseExited (MouseEvent evt) {
-					jlAction1.setBackground(appLook.getMenuBg());
-					jlAction1.setForeground(appLook.getMenuFg());
-					jlAction1.repaint();
-				}
-			});
-			//
-			jlAction2 = new JLabel();
-			jlAction2.setSize(new Dimension(tbtnWidth, tbtnHeight));
-			xPos = xPos + tbtnWidth;
-			jlAction2.setLocation(new Point(xPos, 1));
-			jlAction2.setText(" Preparar Envio");
-			jlAction2.setBackground(appLook.getMenuBg());
-			jlAction2.setForeground(appLook.getMenuFg());
-			jlAction2.setFont(appLook.getSmallFont());
-			jlAction2.setOpaque(true);
-			jlAction2.setHorizontalAlignment(SwingConstants.LEFT);
-			jlAction2.addMouseListener(new MouseAdapter() {  
-				public void mouseClicked(MouseEvent e) {  
-					if (ctrl.getTrxDate() == null) {
-						ErrorMessageWindow x = new ErrorMessageWindow(null, "Debe indicar la fecha para preparar los datos");
-						x.setVisible(true);			    	        				    	    				    	    	
-					} else {
-						boolean prepareTrx = true;
-						// determinar si existen transacciones de tipo factura en el rango de fechas
-						ctrl.findShipmentsCount();
-						if (ctrl.getShipmentsQty() == 0) {
-							prepareTrx = false;
-							ErrorMessageWindow x = new ErrorMessageWindow(null, "No existen transacciones para estos filtros");
-							x.setVisible(true);			    	        				    	    	
-						} else {
-							ctrl.findPreparedCount();
-							if (ctrl.getPreparedQty() == ctrl.getShipmentsQty()) {
-								prepareTrx = false;
-								ErrorMessageWindow x = new ErrorMessageWindow(null, "Ya estan preparadas las transacciones en este rango de fechas");
-								x.setVisible(true);			    	        				    	    	
-							}
-						}
-						//
-						if (prepareTrx == true) {
-							ApplicationMessage m = ctrl.prepareTrx();
-							if (m.getLevel().equalsIgnoreCase(ApplicationMessage.ERROR)) {
-								ErrorMessageWindow x = new ErrorMessageWindow(null, m.getText());
-								x.setVisible(true);		
-							} else {
-								MessageWindow x = new MessageWindow(null, "Preparacion de Transacciones", m.getText());
-								x.setVisible(true);	
-							}
-						}
-					}  
-				}
-				public void mouseEntered (MouseEvent evt) {
-					jlAction2.setBackground(appLook.getSelMenuBg());
-					jlAction2.setForeground(appLook.getSelMenuFg());
-					jlAction2.repaint();
-				}
-				public void mouseExited (MouseEvent evt) {
-					jlAction2.setBackground(appLook.getMenuBg());
-					jlAction2.setForeground(appLook.getMenuFg());
-					jlAction2.repaint();
-				}
-			});
-			//
-			jlAction3 = new JLabel();
-			jlAction3.setSize(new Dimension(tbtnWidth, tbtnHeight));
-			xPos = xPos + tbtnWidth;
-			jlAction3.setLocation(new Point(xPos, 1));
-			jlAction3.setText(" Ver Documentos");
-			jlAction3.setBackground(appLook.getMenuBg());
-			jlAction3.setForeground(appLook.getMenuFg());
-			jlAction3.setFont(appLook.getSmallFont());
-			jlAction3.setOpaque(true);
-			jlAction3.setHorizontalAlignment(SwingConstants.LEFT);
-			jlAction3.addMouseListener(new MouseAdapter() {  
-				public void mouseClicked(MouseEvent e) {  
-					if (ctrl.getTrxDate() == null) {
-						ErrorMessageWindow x = new ErrorMessageWindow(null, "Debe indicar la fecha para visualizar los datos");
-						x.setVisible(true);			    	        				    	    				    	    	
-					} else {
-						queryPrepared();			    	        
-					}  
-				}
-				public void mouseEntered (MouseEvent evt) {
-					jlAction3.setBackground(appLook.getSelMenuBg());
-					jlAction3.setForeground(appLook.getSelMenuFg());
-					jlAction3.repaint();
-				}
-				public void mouseExited (MouseEvent evt) {
-					jlAction3.setBackground(appLook.getMenuBg());
-					jlAction3.setForeground(appLook.getMenuFg());
-					jlAction3.repaint();
-				}
-			});
-			//
-			jlAction4 = new JLabel();
-			jlAction4.setSize(new Dimension(tbtnWidth, tbtnHeight));
-			xPos = xPos + tbtnWidth;
-			jlAction4.setLocation(new Point(xPos, 1));
-			jlAction4.setText(" Enviar Lotes");
-			jlAction4.setBackground(appLook.getMenuBg());
-			jlAction4.setForeground(appLook.getMenuFg());
-			jlAction4.setFont(appLook.getSmallFont());
-			jlAction4.setOpaque(true);
-			jlAction4.setHorizontalAlignment(SwingConstants.LEFT);
-			jlAction4.addMouseListener(new MouseAdapter() {  
 				public void mouseClicked(MouseEvent e) {  
 					boolean sendData = true;
 					/*
@@ -468,28 +336,28 @@ public class SendInvShipmentsBeta extends JFrame {
 					}
 				}  
 				public void mouseEntered (MouseEvent evt) {
-					jlAction4.setBackground(appLook.getSelMenuBg());
-					jlAction4.setForeground(appLook.getSelMenuFg());
-					jlAction4.repaint();
+					jlAction1.setBackground(appLook.getSelMenuBg());
+					jlAction1.setForeground(appLook.getSelMenuFg());
+					jlAction1.repaint();
 				}
 				public void mouseExited (MouseEvent evt) {
-					jlAction4.setBackground(appLook.getMenuBg());
-					jlAction4.setForeground(appLook.getMenuFg());
-					jlAction4.repaint();
+					jlAction1.setBackground(appLook.getMenuBg());
+					jlAction1.setForeground(appLook.getMenuFg());
+					jlAction1.repaint();
 				}
 			});
 			//
-			jlAction5 = new JLabel();
-			jlAction5.setSize(new Dimension(tbtnWidth, tbtnHeight));
+			jlAction2 = new JLabel();
+			jlAction2.setSize(new Dimension(tbtnWidth, tbtnHeight));
 			xPos = xPos + tbtnWidth;
-			jlAction5.setLocation(new Point(xPos, 1));
-			jlAction5.setText(" Consultar Documento");
-			jlAction5.setBackground(appLook.getMenuBg());
-			jlAction5.setForeground(appLook.getMenuFg());
-			jlAction5.setFont(appLook.getSmallFont());
-			jlAction5.setOpaque(true);
-			jlAction5.setHorizontalAlignment(SwingConstants.LEFT);
-			jlAction5.addMouseListener(new MouseAdapter() {  
+			jlAction2.setLocation(new Point(xPos, 1));
+			jlAction2.setText(" Consultar Documento");
+			jlAction2.setBackground(appLook.getMenuBg());
+			jlAction2.setForeground(appLook.getMenuFg());
+			jlAction2.setFont(appLook.getSmallFont());
+			jlAction2.setOpaque(true);
+			jlAction2.setHorizontalAlignment(SwingConstants.LEFT);
+			jlAction2.addMouseListener(new MouseAdapter() {  
 			    public void mouseClicked(MouseEvent e) {  
 		    	        String controlCode = "";
 		    	        long batchId = -1;
@@ -523,49 +391,49 @@ public class SendInvShipmentsBeta extends JFrame {
 		            }
 		        }  
 				public void mouseEntered (MouseEvent evt) {
-					jlAction5.setBackground(appLook.getSelMenuBg());
-					jlAction5.setForeground(appLook.getSelMenuFg());
-					jlAction5.repaint();
+					jlAction2.setBackground(appLook.getSelMenuBg());
+					jlAction2.setForeground(appLook.getSelMenuFg());
+					jlAction2.repaint();
 				}
 				public void mouseExited (MouseEvent evt) {
-					jlAction5.setBackground(appLook.getMenuBg());
-					jlAction5.setForeground(appLook.getMenuFg());
-					jlAction5.repaint();
+					jlAction2.setBackground(appLook.getMenuBg());
+					jlAction2.setForeground(appLook.getMenuFg());
+					jlAction2.repaint();
 				}
 			});
 			//
-			jlAction6 = new JLabel();
-			jlAction6.setSize(new Dimension(tbtnWidth, tbtnHeight));
+			jlAction3 = new JLabel();
+			jlAction3.setSize(new Dimension(tbtnWidth, tbtnHeight));
 			xPos = xPos + tbtnWidth;
-			jlAction6.setLocation(new Point(xPos, 1));
-			jlAction6.setText(" Salir");
-			jlAction6.setBackground(appLook.getMenuBg());
-			jlAction6.setForeground(appLook.getMenuFg());
-			jlAction6.setFont(appLook.getSmallFont());
-			jlAction6.setOpaque(true);
-			jlAction6.setHorizontalAlignment(SwingConstants.LEFT);
-			jlAction6.addMouseListener(new MouseAdapter() {  
+			jlAction3.setLocation(new Point(xPos, 1));
+			jlAction3.setText(" Salir");
+			jlAction3.setBackground(appLook.getMenuBg());
+			jlAction3.setForeground(appLook.getMenuFg());
+			jlAction3.setFont(appLook.getSmallFont());
+			jlAction3.setOpaque(true);
+			jlAction3.setHorizontalAlignment(SwingConstants.LEFT);
+			jlAction3.addMouseListener(new MouseAdapter() {  
 				public void mouseClicked(MouseEvent e) {  
 					requestLeaving();
 				} 
 				public void mouseEntered (MouseEvent evt) {
-					jlAction6.setBackground(appLook.getSelMenuBg());
-					jlAction6.setForeground(appLook.getSelMenuFg());
-					jlAction6.repaint();
+					jlAction3.setBackground(appLook.getSelMenuBg());
+					jlAction3.setForeground(appLook.getSelMenuFg());
+					jlAction3.repaint();
 				}
 				public void mouseExited (MouseEvent evt) {
-					jlAction6.setBackground(appLook.getMenuBg());
-					jlAction6.setForeground(appLook.getMenuFg());
-					jlAction6.repaint();
+					jlAction3.setBackground(appLook.getMenuBg());
+					jlAction3.setForeground(appLook.getMenuFg());
+					jlAction3.repaint();
 				}
 			});
 			//
 			jpToolbar.add(jlAction1, null);
 			jpToolbar.add(jlAction2, null);
 			jpToolbar.add(jlAction3, null);
-			jpToolbar.add(jlAction4, null);
-			jpToolbar.add(jlAction5, null);
-			jpToolbar.add(jlAction6, null);
+			//jpToolbar.add(jlAction4, null);
+			//jpToolbar.add(jlAction5, null);
+			//jpToolbar.add(jlAction6, null);
 		}
 		return jpToolbar;
 	}
