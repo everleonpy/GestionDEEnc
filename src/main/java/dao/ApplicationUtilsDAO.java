@@ -10,14 +10,14 @@ import business.AppConfig;
 import dao.ProblemaDatosException;
 
 public class ApplicationUtilsDAO {
-	
+	 
 	/**
-	 * Este metodo tiene como objetivo obtener el valor de una secuencia 
-	 * de base de datos cuyo nombre se recibe como parametro
-	 * 
-	 * @author jLcc 
-	 *
-	 */
+	* Este metodo tiene como objetivo obtener el valor de una secuencia 
+	* de base de datos cuyo nombre se recibe como parametro
+	* 
+	* @author jLcc 
+	*
+	*/
 	public static long getSeqNextval ( String seqName ) throws ProblemaDatosException, Exception{
 		
 		Connection conn =  null;
