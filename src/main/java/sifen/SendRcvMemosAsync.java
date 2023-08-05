@@ -26,6 +26,7 @@ import com.roshka.sifen.core.beans.response.RespuestaRecepcionLoteDE;
 import com.roshka.sifen.core.exceptions.SifenException;
 import com.roshka.sifen.core.fields.request.de.TdDatGralOpe;
 import com.roshka.sifen.core.fields.request.de.TgActEco;
+import com.roshka.sifen.core.fields.request.de.TgCamCond;
 import com.roshka.sifen.core.fields.request.de.TgCamDEAsoc;
 import com.roshka.sifen.core.fields.request.de.TgCamIVA;
 import com.roshka.sifen.core.fields.request.de.TgCamItem;
@@ -51,6 +52,7 @@ import com.roshka.sifen.core.types.TcRelMerc;
 import com.roshka.sifen.core.types.TcUniMed;
 import com.roshka.sifen.core.types.TdCondTiCam;
 import com.roshka.sifen.core.types.TiAfecIVA;
+import com.roshka.sifen.core.types.TiCondOpe;
 import com.roshka.sifen.core.types.TiMotEmi;
 import com.roshka.sifen.core.types.TiNatRec;
 import com.roshka.sifen.core.types.TiTIpoDoc;
@@ -60,22 +62,21 @@ import com.roshka.sifen.core.types.TiTipDocAso;
 import com.roshka.sifen.core.types.TiTipDocRec;
 
 import business.ApplicationMessage;
-import dao.NotaRcvElectronicaDAO;
-import dao.RcvCustomersTrxDAO;
+import dao.NotaCrElectronicaDAO;
 import dao.RcvTrxEbBatchItemsDAO;
 import dao.RcvTrxEbBatchesDAO;
 import dao.Util;
-import dao.UtilitiesDAO;
-import pojo.CamposActivEconomica;
-import pojo.CamposDEAsociado;
-import pojo.CamposDescuentosItem;
-import pojo.CamposEmisorDE;
-import pojo.CamposItemsOperacion;
-import pojo.CamposNotaElectronica;
-import pojo.CamposOperacionComercial;
-import pojo.CamposReceptorDE;
-import pojo.CamposTimbrado;
-import pojo.DocumElectronico;
+import nider.TmpFactuDE_A;
+import nider.TmpFactuDE_C;
+import nider.TmpFactuDE_D1;
+import nider.TmpFactuDE_D2;
+import nider.TmpFactuDE_D21;
+import nider.TmpFactuDE_D3;
+import nider.TmpFactuDE_E5;
+import nider.TmpFactuDE_E7;
+import nider.TmpFactuDE_E8;
+import nider.TmpFactuDE_E811;
+import nider.TmpFactuDE_H;
 import pojo.RcvInvoice;
 import pojo.RcvTrxEbBatch;
 import pojo.RcvTrxEbBatchItem;
@@ -93,26 +94,20 @@ public class SendRcvMemosAsync {
 
 	public ApplicationMessage sendDeBatch ( String trxType, 
 			                                java.util.Date trxDate,
-			                                int groupFrom, 
-			                                int groupTo,
 			                                long orgId, 
 			                                long unitId, 
 			                                String userName ) throws SifenException {
 		ApplicationMessage am = null;
 		Connection conn = null;
-		int counter = 0;
 
 		int rowsQty = 50;
 
-		String batchNo = null;
-		int respCode = 0;
 		String fileName;
+		int groupCounter = 0;
+		int allSent = 0;
+		int allFailed = 0;
+		boolean dataFound = false;
 		boolean fileCreated;
-		//
-		java.util.Date batchDate = new java.util.Date();
-		int resultCode = 0;
-		String resultMsg = null;
-		int processTime = 0;
 
 		// establecer la configuracion Sifen
 		try {
@@ -135,155 +130,76 @@ public class SendRcvMemosAsync {
 			return am;
 		}
 
+		ArrayList<DocumentoElectronico> deList = null;
+		ArrayList<RcvInvoice> sentList = null;
+		/**
+		 +---------------------------------------------------------------------+
+		 | procesar los lotes cuyo numero esta comprendido entre groupFrom y   |
+		 | groupTo                                                             |
+		 +---------------------------------------------------------------------+		 
+		*/
 		try {
-			int groupNo = groupFrom;
-			while (groupNo <= groupTo) {
-				counter = 0;
-				// arreglo para guardar la lista de transacciones que pudieron ser enviadas
-				ArrayList<RcvInvoice> sentList = new ArrayList<RcvInvoice>();
-				// arreglo para guardar la lista de documentos electronicos
-				ArrayList<DocumentoElectronico> deList = new ArrayList<DocumentoElectronico>();
-				// arreglo para guardar la lista de documentos auxiliares
-				ArrayList<DocumElectronico> daList = NotaRcvElectronicaDAO.getRcvMemos( trxDate, groupNo, rowsQty );
-				if (daList != null) {
-					Iterator itr1 = daList.iterator();
-					while (itr1.hasNext()) {
-						DocumElectronico x = (DocumElectronico) itr1.next();
-						DocumentoElectronico DE = this.mapAuxDocToEd(x, x.getTransactionId(), conn);
-						if (DE != null) {
-							if (DE.getId() != null) {
-								System.out.println("Registrando documento electronico: " + x.getTransactionId() + " - " + DE.getId());
-								deList.add(DE);
-								//System.out.println("1");
-								fileName = "/Users/jota_ce/Documents/cacique-sifen/xml/notas-credito/" + 
-										String.valueOf(x.getTransactionId()) + ".xml";
-								//System.out.println("2");
-								try {
-									fileCreated = DE.generarXml(fileName);
-								} catch ( Exception e) {
-									e.printStackTrace();
-								}
-								//System.out.println("3");
-								// agregar a la lista de transacciones cuyo DE fue generado y podran ser enviadas
-								//System.out.println("4");
-								RcvInvoice sentTx = new RcvInvoice();
-								sentTx.setInvoiceId(x.getTransactionId());
-								sentTx.setControlCode(DE.getId());
-								sentTx.setOrgId(orgId);
-								sentTx.setUnitId(unitId);
-								sentTx.setQrCode(DE.getEnlaceQR());
-								//System.out.println("6");
-								sentList.add(sentTx);
-								counter++;
-							} else {
-								System.out.println("No se pudo generar el CDC para: " + x.getTransactionId() );							
-							}
-						}
-					}
-				}
-				System.out.println("Grupo " + groupNo + " Total de transacciones: " + counter);
-				//counter = 0;
-				// invocar los servcios de Sifen para el envio de la nota
-				if (counter > 0) {
-					System.out.println("Enviando lote...");
-					RespuestaRecepcionLoteDE ret = Sifen.recepcionLoteDE(deList);
-					logger.info(ret.toString());
-					logger.info("CODIGO DE ESTADO: " + ret.getCodigoEstado());
-					logger.info("COD RESP........: " + ret.getdCodRes());
-					logger.info("MSG RESP........: " + ret.getdMsgRes());
-					logger.info("RESPUESTA BRUTA.: " + ret.getRespuestaBruta());
-
-					System.out.println(ret.toString());
-					System.out.println("CODIGO DE ESTADO: " + ret.getCodigoEstado());
-					System.out.println("COD RESP........: " + ret.getdCodRes());
-					System.out.println("MSG RESP........: " + ret.getdMsgRes());
-					System.out.println("XML.............: ");
-					System.out.println(ret.getRespuestaBruta());
-
-					/**
-					 * Si tuvo exito el envio del lote, en este punto crear el lote y asignarlo
-					 * a las transacciones procesadas.
-					 */
-					JacksonXmlModule module = new JacksonXmlModule();
-					module.setDefaultUseWrapper(false);
-					// XmlMapper xmlMapper = new XmlMapper(module);
-					XmlMapper xmlMapper = new XmlMapper(module);
-
-					try {
-						Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(),Envelope.class);
-						if (tmp != null) {
-						    respCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
-						    batchNo = tmp.getBody().getrResEnviLoteDe().getdProtConsLote();
-						    batchDate = tmp.getBody().getrResEnviLoteDe().getdFecProc();
-						    resultCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
-						    resultMsg = tmp.getBody().getrResEnviLoteDe().getdMsgRes();
-						    processTime = tmp.getBody().getrResEnviLoteDe().getdTpoProces();
-						    System.out.println("=============================== CONSULTA DE LOTES =====================================");
-						    System.out.println("Codigo Resultado.: " + tmp.getBody().getrResEnviLoteDe().dCodRes);
-						    System.out.println("Mensaje Resultado: " + tmp.getBody().getrResEnviLoteDe().getdMsgRes());
-						    System.out.println("Numero de Lote...: " + tmp.getBody().getrResEnviLoteDe().getdProtConsLote());
-						    System.out.println("Tiempo Proc......: " + tmp.getBody().getrResEnviLoteDe().getdTpoProces());
-						    System.out.println("Fec/Hora Recep...: " + tmp.getBody().getrResEnviLoteDe().getdFecProc());
-						    System.out.println("=============================== CONSULTA DE LOTES =====================================");
-						} else {
-							am = new ApplicationMessage();
-							am.setMessage("DECODE-RESP", "El servicio no responde o se perdio la conexion con el mismo", ApplicationMessage.ERROR);
-							return am;							
-						}
-
-					} catch (JsonProcessingException e) {
-						e.printStackTrace();
-						am = new ApplicationMessage();
-						am.setMessage("DECODE-RESP", "Error al leer respuesta: " + e.getMessage(), ApplicationMessage.ERROR);
-						return am;
-					}
-
-					if (respCode == 300) {
-						try {
-							// crear una entrada en la tabla de lotes enviados
-							RcvTrxEbBatch batch = new RcvTrxEbBatch();
-							long batchId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCHES", conn);
-							batch.setIdentifier(batchId);
-							batch.setBatchNumber(batchNo.toString());
-							batch.setTrxType(trxType);
-							batch.setTrxDate(trxDate);
-							batch.setCreatedBy(userName);
-							batch.setCreatedOn(new java.util.Date());
-							batch.setOrgId(orgId);
-							batch.setTransmissDate(batchDate);
-							batch.setUnitId(unitId);
-							batch.setResultCode(resultCode);
-							batch.setResultMessage(resultMsg);
-							batch.setProcessTime(processTime);
-							int rows = RcvTrxEbBatchesDAO.addRow(batch, conn);
-							// crear la lista de notas que fueron incluidas en el lote
-							long itemId = 0;
-							Iterator itr2 = sentList.iterator();
-							while (itr2.hasNext()) {
-								RcvInvoice x = (RcvInvoice) itr2.next();
-								RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
-								itemId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCH_ITEMS", conn);
-								o.setIdentifier(itemId);
-								o.setBatchId(batchId);
-								o.setControlCode(x.getControlCode());
-								o.setCreatedBy(userName);
-								o.setCreatedOn(new java.util.Date());
-								o.setOrgId(x.getOrgId());
-								o.setTransactionId(x.getInvoiceId());
-								o.setUnitId(x.getUnitId());
-								o.setXmlFile(String.valueOf(x.getInvoiceId()) + ".xml");
-								o.setQrCode(x.getQrCode());
-								RcvTrxEbBatchItemsDAO.addRow(o, conn);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				} 
-				groupNo++;
-			}
+		    // Arreglo para guardar la lista de documentos auxiliares provenientes del
+		    // sistema emisor
+		    // Se recuperaran todas las transacciones del tipo y la fecha especificadas
+		    // y el ciclo while se encargara de agrupar las transacciones de a "rowsQty"
+		    ArrayList<TmpFactuDE_A> daList = NotaCrElectronicaDAO.getDEList(trxDate);
+		    if (daList != null) {
+		    	    dataFound = true;
+		        Iterator itr1 = daList.iterator();
+		        while (itr1.hasNext()) {
+		    	        if (groupCounter == 0) {
+					    // arreglo para guardar la lista de documentos electronicos
+					    deList = new ArrayList<DocumentoElectronico>();
+				        // arreglo para guardar la lista de transacciones que pudieron ser enviadas
+				        sentList = new ArrayList<RcvInvoice>();
+		    	        }
+		    	        TmpFactuDE_A x = (TmpFactuDE_A) itr1.next();
+				    DocumentoElectronico DE = this.mapAuxDocToEd(x, x.getIdMov(), conn);
+			        if (DE != null) {
+				        if (DE.getId() != null) {
+					        System.out.println("Registrando documento electronico: " + x.getIdMov() + " - " + DE.getId());
+					        deList.add(DE);
+					        //fileName = "/Users/jota_ce/Documents/jl-sifen/xml/notas-credito/" + 
+						    //           String.valueOf(x.getIdMov()) + ".xml";
+					        
+					        fileName = "c:/xml/cm/"+String.valueOf(x.getIdMov()) + ".xml";
+					        try {
+						        fileCreated = DE.generarXml(fileName);
+					        } catch ( Exception e) {
+						        e.printStackTrace();
+					        }
+					        // agregar a la lista de transacciones cuyo DE fue generado y podran ser enviadas
+					        RcvInvoice sentTx = new RcvInvoice();
+					        sentTx.setInvoiceId(x.getIdMov());
+					        sentTx.setControlCode(DE.getId());
+					        sentTx.setQrCode(DE.getEnlaceQR());
+					        sentTx.setOrgId(orgId);
+					        sentTx.setUnitId(unitId);
+					        sentList.add(sentTx);
+					        allSent++;
+				        } else {
+				    	        allFailed++;
+					        System.out.println("No se pudo generar el CDC para: " + x.getIdMov() );							
+				        }
+		    	            groupCounter++;
+		    	            if (groupCounter == rowsQty) {
+		    	        	        // ejecutar la llamada al servicio de envio de datos por lote
+		    	        	        sendBatch ( deList, sentList, trxType, trxDate, orgId, unitId, userName, conn );
+						    groupCounter = 0;		    	        	
+		    	            }
+			        }
+		        }
+    	            // ejecutar la llamada al servicio de envio de datos para el ultimo lote
+    	            sendBatch ( deList, sentList, trxType, trxDate, orgId, unitId, userName, conn );
+		    }
 			am = new ApplicationMessage();
-			am.setMessage("SEND-BATCH", "Actividad realizada con exito", ApplicationMessage.MESSAGE);
+			if (dataFound == true) {
+			    String res = "Actividad realizada con exito. Enviados con exito: " + allSent + " No enviados: " + allFailed; 
+			    am.setMessage("SEND-BATCH", res, ApplicationMessage.MESSAGE);
+			} else {
+			    am.setMessage("SEND-BATCH", "No se encontraron transacciones para enviar", ApplicationMessage.ERROR);				
+			}
 			return am;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -295,11 +211,125 @@ public class SendRcvMemosAsync {
 		}
 	}
 	
-	private DocumentoElectronico mapAuxDocToEd ( DocumElectronico da, long invoiceId, Connection conn ) {
+	private void sendBatch ( ArrayList<DocumentoElectronico> deList,
+			                 ArrayList<RcvInvoice> sentList,
+			                 String trxType, 
+			                 java.util.Date trxDate,
+			                 long orgId, 
+			                 long unitId, 
+			                 String userName, 
+			                 Connection conn ) {
+		boolean sendOk = false;
+		RespuestaRecepcionLoteDE ret = null;
+		int respCode = 0;
+		String batchNo = null;
+		java.util.Date batchDate = new java.util.Date();
+		int resultCode = 0;
+		String resultMsg = null;
+		int processTime = 0;
+		int itemsQty = deList.size();
+
+		try {
+			sendOk = true;
+			System.out.println("Enviando lote...");
+			ret = Sifen.recepcionLoteDE(deList);
+			logger.info(ret.toString());
+			logger.info("CODIGO DE ESTADO: " + ret.getCodigoEstado());
+			logger.info("COD RESP........: " + ret.getdCodRes());
+			logger.info("MSG RESP........: " + ret.getdMsgRes());
+			logger.info("RESPUESTA BRUTA.: " + ret.getRespuestaBruta());
+
+			System.out.println(ret.toString());
+			System.out.println("CODIGO DE ESTADO: " + ret.getCodigoEstado());
+			System.out.println("COD RESP........: " + ret.getdCodRes());
+			System.out.println("MSG RESP........: " + ret.getdMsgRes());
+			System.out.println("XML.............: ");
+			System.out.println(ret.getRespuestaBruta());
+		} catch (Exception e1) {
+			sendOk = false;
+			e1.printStackTrace(); 
+		}
+		/**
+		 * Si tuvo exito el envio del lote, en este punto crear el lote y asignarlo
+		 * a las transacciones procesadas.
+		 */
+		if ( sendOk == true) {
+			respCode = -1;
+			JacksonXmlModule module = new JacksonXmlModule();
+			module.setDefaultUseWrapper(false);
+			// XmlMapper xmlMapper = new XmlMapper(module);
+			XmlMapper xmlMapper = new XmlMapper(module);
+			try {
+				Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(),Envelope.class);
+				respCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
+				batchNo = tmp.getBody().getrResEnviLoteDe().getdProtConsLote();
+				batchDate = tmp.getBody().getrResEnviLoteDe().getdFecProc();
+				resultCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
+				resultMsg = tmp.getBody().getrResEnviLoteDe().getdMsgRes();
+				processTime = tmp.getBody().getrResEnviLoteDe().getdTpoProces();
+				System.out.println("=============================== CONSULTA DE LOTES =====================================");
+				System.out.println("Codigo Resultado.: " + tmp.getBody().getrResEnviLoteDe().dCodRes);
+				System.out.println("Mensaje Resultado: " + tmp.getBody().getrResEnviLoteDe().getdMsgRes());
+				System.out.println("Numero de Lote...: " + tmp.getBody().getrResEnviLoteDe().getdProtConsLote());
+				System.out.println("Tiempo Proc......: " + tmp.getBody().getrResEnviLoteDe().getdTpoProces());
+				System.out.println("Fec/Hora Recep...: " + tmp.getBody().getrResEnviLoteDe().getdFecProc());
+				System.out.println("=============================== CONSULTA DE LOTES =====================================");
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			} 	
+			if (respCode == 300) {
+				try {
+					long batchId = 0;
+					// crear una entrada en la tabla de lotes enviados
+					RcvTrxEbBatch batch = new RcvTrxEbBatch();
+					//long batchId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCHES");
+					//batch.setIdentifier(batchId);
+					batch.setBatchNumber(batchNo);
+					batch.setTrxType(trxType);
+					batch.setTrxDate(trxDate);
+					batch.setCreatedBy(userName);
+					batch.setCreatedOn(new java.util.Date());
+					batch.setOrgId(orgId);
+					batch.setTransmissDate(batchDate);
+					batch.setUnitId(unitId);
+					batch.setResultCode(resultCode);
+					batch.setResultMessage(resultMsg);
+					batch.setProcessTime(processTime);
+					batch.setItemsQty(itemsQty);
+					int rows = RcvTrxEbBatchesDAO.addRow(batch, conn);
+					batchId = RcvTrxEbBatchesDAO.getMaxId(conn);
+					// crear la lista de facturas que fueron incluidas en el lote
+					long itemId = 0;
+					Iterator itr2 = sentList.iterator();
+					while (itr2.hasNext()) {
+						RcvInvoice x = (RcvInvoice) itr2.next();
+						RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
+						//itemId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCH_ITEMS", conn.getConnection());
+						//o.setIdentifier(itemId);
+						o.setBatchId(batchId);
+						o.setControlCode(x.getControlCode());
+						o.setCreatedBy(userName);
+						o.setCreatedOn(new java.util.Date());
+						o.setOrgId(x.getOrgId());
+						o.setTransactionId(x.getInvoiceId());
+						o.setUnitId(x.getUnitId());
+						o.setXmlFile(String.valueOf(x.getInvoiceId()) + ".xml");
+						o.setQrCode(x.getQrCode());
+						RcvTrxEbBatchItemsDAO.addRow(o, conn);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private DocumentoElectronico mapAuxDocToEd ( TmpFactuDE_A da, long invoiceId, Connection conn ) {
 		//System.out.println("Cargando documento auxiliar: " + da.getDE().getId());
 		DocumentoElectronico DE = new DocumentoElectronico();
 		LocalDateTime currentDate = LocalDateTime.now();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		java.text.SimpleDateFormat sdf1 = new java.text.SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+		SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd");
 		String s;
 		BigDecimal bd;
 		final short CONTADO = 1;
@@ -309,30 +339,30 @@ public class SendRcvMemosAsync {
 
 		try {
 		// Grupo A
-		if (da.getDE().getId() != null) {
+		if (da.getId() != null) {
 			codePlace = "Asignar CDC";
 			// Este codigo sera ejecutado solamente si el valor del CDC fue asignado en forma previa a
 			// la preparacion del documento electronico para el envio.
 			// Por ejemplo cuando ya se generan el CDC y el codigo QR en el acto de confirmar la transaccion
 			// para poder emitir el KuDE en dicho acto.
-			DE.setId(da.getDE().getId());
-			DE.setdDVId(da.getDE().getdDVId());
+			DE.setId(da.getId());
+			DE.setdDVId(String.valueOf(da.getdDVId()));
 			//System.out.println("CDC pre-generado: " + DE.getId() + " - " + DE.getdDVId());
 		}
 		codePlace = "Fecha Firma";
 		DE.setdFecFirma(currentDate);
-		DE.setdSisFact(da.getDE().getdSisFact());
+		DE.setdSisFact(da.getdSisFact());
 		dataFound = true;
 
 		// Grupo B
 		codePlace = "Asignar gOpeDE";
 		TgOpeDE gOpeDE;
-		if (da.getDE().getId() != null) {
-		    gOpeDE = new TgOpeDE(da.getDE().getId());
+		if (da.getId() != null) {
+		    gOpeDE = new TgOpeDE(da.getId());
 		} else {
 		    gOpeDE = new TgOpeDE(null);
 		}
-		gOpeDE.setiTipEmi(TTipEmi.getByVal(da.getDE().getgOpeDE().getiTipEmi()));
+		gOpeDE.setiTipEmi(TTipEmi.getByVal(da.getgOpeDe().getiTipEmi()));
 		// esta informacion la completa el paquete de Roshka
 		//gOpeDE.setdInfoEmi(da.getDE().getgOpeDE().getdInfoEmi());
 		//gOpeDE.setdInfoFisc(da.getDE().getgOpeDE().getdInfoFisc());
@@ -346,23 +376,25 @@ public class SendRcvMemosAsync {
 		 */
 		codePlace = "Asignar gTimb";
 		TgTimb gTimb = new TgTimb();
-		CamposTimbrado t = da.getDE().getgTimb();
+		TmpFactuDE_C t = da.getgTimb();
 		gTimb.setiTiDE(TTiDE.getByVal(t.getiTiDE()));
 		gTimb.setdNumTim(t.getdNumTim());
 		gTimb.setdEst(t.getdEst());
 		gTimb.setdPunExp(t.getdPunExp());
-		gTimb.setdNumDoc(t.getdNumDoc());
+		gTimb.setdNumDoc(String.valueOf(t.getdNumDoc()));
 		if (t.getdSerieNum() != null) {
-			gTimb.setdSerieNum(t.getdSerieNum());
+			if (t.getdSerieNum().trim().isEmpty() == false) {
+			    gTimb.setdSerieNum(t.getdSerieNum());
+			}
 		}
-		s = sdf.format(t.getdFeIniT());
+		s = sdf2.format(t.getdFeIniT());
 		gTimb.setdFeIniT(LocalDate.parse(s));
 		DE.setgTimb(gTimb);
 
 		// Grupo D
 		codePlace = "Asignar gDatGralOpe";
 		TdDatGralOpe dDatGralOpe = new TdDatGralOpe();
-		LocalDateTime ldt = LocalDateTime.ofInstant(da.getDE().getgDatGralOpe().getdFeEmiDE().toInstant(),
+		LocalDateTime ldt = LocalDateTime.ofInstant(da.getgDatGralOpe().getdFeEmiDE().toInstant(),
 				ZoneId.systemDefault());
 		dDatGralOpe.setdFeEmiDE(ldt);
 		/**
@@ -372,7 +404,7 @@ public class SendRcvMemosAsync {
 		 */
 		codePlace = "Asignar gOpeCom";
 		TgOpeCom gOpeCom = new TgOpeCom();
-		CamposOperacionComercial oc = da.getDE().getgDatGralOpe().getgOpeComer();
+		TmpFactuDE_D1 oc = da.getgDatGralOpe().getgOpeCom();
 		gOpeCom.setiTipTra(TTipTra.getByVal(oc.getiTipTra()));
 		gOpeCom.setiTImp(TTImp.getByVal(oc.getiTImp()));
 		gOpeCom.setcMoneOpe(CMondT.getByName(oc.getcMoneOpe()));
@@ -389,9 +421,9 @@ public class SendRcvMemosAsync {
 		 */
 		codePlace = "Asignar gEmis";
 		TgEmis gEmis = new TgEmis();
-		CamposEmisorDE em = da.getDE().getgDatGralOpe().getgEmis();
+		TmpFactuDE_D2 em = da.getgDatGralOpe().getgEmis();
 		gEmis.setdRucEm(em.getdRucEm());
-		gEmis.setdDVEmi(em.getdDVEmi());
+		gEmis.setdDVEmi(String.valueOf(em.getdDVEmi()));
 		// por alguna razon, no toma el valor que viene de la organizacion, asi que por
 		// premura de tiempo, le asignamos directamente el codigo de persona juridica
 		//gEmis.setiTipCont(TiTipCont.getByVal(em.getiTipCont()));
@@ -420,25 +452,22 @@ public class SendRcvMemosAsync {
 		gEmis.setcCiuEmi(em.getcCiuEmi());
 		gEmis.setdDesCiuEmi(em.getdDesCiuEmi());
 		gEmis.setdTelEmi(em.getdTelEmi());
-		gEmis.setdEmailE(em.getdEmailE());
+		gEmis.setdEmailE(em.getdEmailE().trim());
 		if (em.getdDenSuc() != null) {
 			gEmis.setdDenSuc(em.getdDenSuc());
 		}
 
 		List<TgActEco> gActEcoList = new ArrayList<>();
-		ArrayList<CamposActivEconomica> la = em.getgActEco();
+		ArrayList<TmpFactuDE_D21> la = em.getEconActivList();
 		codePlace = "Asignar gActEco";
 		Iterator itr1 = la.iterator();
 		while (itr1.hasNext()) {
-			CamposActivEconomica x = (CamposActivEconomica) itr1.next();
-			if (x.getcActEco().equalsIgnoreCase("46301") | x.getcActEco().equalsIgnoreCase("46302") |
-					x.getcActEco().equalsIgnoreCase("46304")) {
-				TgActEco gActEco = new TgActEco();
-				gActEco.setcActEco(x.getcActEco());
-				gActEco.setdDesActEco(x.getdDesActEco());
-				gActEcoList.add(gActEco);
-				//System.out.println(gActEco.getcActEco() + ": " + gActEco.getdDesActEco());
-			}
+			TmpFactuDE_D21 x = (TmpFactuDE_D21) itr1.next();
+			TgActEco gActEco = new TgActEco();
+			gActEco.setcActEco(String.valueOf(x.getcActEco()));
+			gActEco.setdDesActEco(x.getdDesActEco());
+			gActEcoList.add(gActEco);
+			//System.out.println(gActEco.getcActEco() + ": " + gActEco.getdDesActEco());
 		}    	        
 		gEmis.setgActEcoList(gActEcoList);
 		dDatGralOpe.setgEmis(gEmis);
@@ -450,7 +479,7 @@ public class SendRcvMemosAsync {
 		 */
 		codePlace = "Asignar gDatRec";
 		TgDatRec gDatRec = new TgDatRec();
-		CamposReceptorDE rd = da.getDE().getgDatGralOpe().getgDatRec();
+		TmpFactuDE_D3 rd = da.getgDatGralOpe().getgDatRec();
 		gDatRec.setiNatRec(TiNatRec.getByVal(rd.getiNatRec()));
 		gDatRec.setiTiOpe(TiTiOpe.getByVal(rd.getiTiOpe()));
 		gDatRec.setcPaisRec(PaisType.getByName(rd.getcPaisRec()));
@@ -465,14 +494,16 @@ public class SendRcvMemosAsync {
 			gDatRec.setiTipIDRec(TiTipDocRec.getByVal(rd.getiTipIDRec()));
 		}
 		if (rd.getdNumIDRec() != null) {
-			gDatRec.setdNumIDRec(rd.getdNumIDRec());
+			gDatRec.setdNumIDRec(rd.getdNumIDRec().trim());
 		}
 		gDatRec.setdNomRec(rd.getdNomRec());
 		if (rd.getdNomFanRec() != null) {
-			gDatRec.setdNomFanRec(rd.getdNomFanRec());
+			gDatRec.setdNomFanRec(rd.getdNomFanRec().trim());
 		}
 		if (rd.getdDirRec() != null) {
-			gDatRec.setdDirRec(rd.getdDirRec());
+			if (rd.getdDirRec().trim().isEmpty() == false) {
+			    gDatRec.setdDirRec(rd.getdDirRec().trim());
+			}
 		}
 		if (rd.getdNumCasRec() != 0) {
 			gDatRec.setdNumCasRec(rd.getdNumCasRec());
@@ -481,24 +512,33 @@ public class SendRcvMemosAsync {
 			gDatRec.setcDepRec(TDepartamento.getByVal(rd.getcDepRec()));
 		}
 		if (rd.getcDisRec() != 0) {
+			System.out.println("cDisRec: " + rd.getcDisRec() + " - " + rd.getcDisRec());
 			gDatRec.setcDisRec(rd.getcDisRec());
-			gDatRec.setdDesDisRec(rd.getdDesDisRec());
+			gDatRec.setdDesDisRec(rd.getdDesDisRec().trim());
 		}
 		if (rd.getcCiuRec() != 0) {
 			gDatRec.setcCiuRec(rd.getcCiuRec());
 			gDatRec.setdDesCiuRec(rd.getdDesCiuRec());
 		}
 		if (rd.getdTelRec() != null) {
-			gDatRec.setdTelRec(rd.getdTelRec());
+			if (rd.getdTelRec().isEmpty() == false) {
+			    gDatRec.setdTelRec(rd.getdTelRec());
+			}
 		}
 		if (rd.getdCelRec() != null) {
-			gDatRec.setdCelRec(rd.getdCelRec());
+			if (rd.getdCelRec().isEmpty() == false) {
+			    gDatRec.setdCelRec(rd.getdCelRec());
+			}
 		}
 		if (rd.getdEmailRec() != null) {
-			gDatRec.setdEmailRec(rd.getdEmailRec());
+			if (rd.getdEmailRec().isEmpty() == false) {
+			    gDatRec.setdEmailRec(rd.getdEmailRec().trim());
+			}
 		}
 		if (rd.getdCodCliente() != null) {
-			gDatRec.setdCodCliente(rd.getdCodCliente());
+			if (rd.getdCodCliente().isEmpty() == false) {
+			    gDatRec.setdCodCliente(rd.getdCodCliente());
+			}
 		}
 
 		dDatGralOpe.setgDatRec(gDatRec);
@@ -509,14 +549,21 @@ public class SendRcvMemosAsync {
 
 		/**
          +-----------------------------------------------------------------------------+
-         | gCamNCDE - Documento tipo nota electronica                                 |
+         | gCamFE - Documento tipo factura electronica                                 |
          +-----------------------------------------------------------------------------+
 		 */
-		codePlace = "Asignar gCamNCDE";
+		codePlace = "Asignar gCamFE";
 		TgCamNCDE gCamNCDE = new TgCamNCDE();
-		CamposNotaElectronica ne = da.getDE().getgDtipDE().getgCamNCDE();
+		TmpFactuDE_E5 ne = da.getgTipDE().getgCamNCDE();
 		gCamNCDE.setiMotEmi(TiMotEmi.getByVal(ne.getiMotEmi()));
 		gDtipDE.setgCamNCDE(gCamNCDE);
+
+		/* Anulamos Mientras...
+		codePlace = "Asignar gCamCond";
+		TgCamCond gCamCond = new TgCamCond();
+		TmpFactuDE_E7 co = da.getgTipDE().getgCamCond();
+		gCamCond.setiCondOpe(TiCondOpe.getByVal(co.getiCondOpe()));
+		*/
 
 		/**
          +-----------------------------------------------------------------------------+
@@ -525,10 +572,10 @@ public class SendRcvMemosAsync {
 		 */
 		codePlace = "Asignar lista items";
 		List<TgCamItem> gCamItemList = new ArrayList<>();
-		ArrayList<CamposItemsOperacion> im = da.getDE().getgDtipDE().getgCamItem();
+		ArrayList<TmpFactuDE_E8> im = da.getgTipDE().getItemsList();
 		Iterator itr4 = im.iterator();
 		while (itr4.hasNext()) {
-			CamposItemsOperacion x = (CamposItemsOperacion) itr4.next();
+			TmpFactuDE_E8 x = (TmpFactuDE_E8) itr4.next();
 			codePlace = "Asignar item " + x.getdDesProSer();
 			TgCamItem gCamItem = new TgCamItem();
 			gCamItem.setdCodInt(x.getdCodInt());
@@ -539,10 +586,16 @@ public class SendRcvMemosAsync {
 				gCamItem.setdNCM(x.getdNCM());
 			}
 			if (x.getdDncpG() != null) {
-				gCamItem.setdDncpG(x.getdDncpG());
+				//System.out.println("getdDncpG: " + x.getdNCM());
+				if (x.getdDncpG().trim().isEmpty() == false) {
+				    gCamItem.setdDncpG(x.getdDncpG());
+				}
 			}
 			if (x.getdDncpE() != null) {
-				gCamItem.setdDncpE(x.getdDncpE());
+				//System.out.println("getdDncpE: " + x.getdDncpE());
+				if (x.getdDncpE().trim().isEmpty() == false) {
+				    gCamItem.setdDncpE(x.getdDncpE());
+				}
 			}
 			if (x.getdGtin() != 0) {
 				gCamItem.setdGtin(x.getdGtin());
@@ -557,23 +610,31 @@ public class SendRcvMemosAsync {
 				gCamItem.setcPaisOrig(PaisType.getByName(x.getcPaisOrig()));
 			}
 			if (x.getdInfItem() != null) {
-				gCamItem.setdInfItem(x.getdInfItem());
+				//System.out.println("getdInfItem: " + x.getdInfItem());
+				if (x.getdInfItem().trim().isEmpty() == false) {
+				    gCamItem.setdInfItem(x.getdInfItem());
+				}
 			}
 			if (x.getcRelMerc() != 0) {
 				gCamItem.setcRelMerc(TcRelMerc.getByVal(x.getcRelMerc()));
 			}
 			if (x.getdCanQuiMer() != null) {
+				//System.out.println("getdCanQuiMer: " + x.getdCanQuiMer());
 				if (x.getdCanQuiMer().doubleValue() != 0.0) {
 					gCamItem.setdCanQuiMer(x.getdCanQuiMer());
 				}
 			}
 			if (x.getdPorQuiMer() != null) {
+				//System.out.println("getdPorQuiMer: " + x.getdPorQuiMer());
 				if (x.getdPorQuiMer().doubleValue() != 0.0) {
 					gCamItem.setdPorQuiMer(x.getdPorQuiMer());
 				}
 			}
 			if (x.getdCDCAnticipo() != null) {
-				gCamItem.setdCDCAnticipo(x.getdCDCAnticipo());
+				//System.out.println("getdCDCAnticipo: " + x.getdCDCAnticipo());
+				if (x.getdCDCAnticipo().trim().isEmpty() == false) {
+				    gCamItem.setdCDCAnticipo(x.getdCDCAnticipo());
+				}
 			}
 
 			// valores del item
@@ -585,11 +646,11 @@ public class SendRcvMemosAsync {
 					gValorItem.setdTiCamIt(x.getgValorItem().getdTiCamIt());
 				}
 			}
-			// el valor del campo "dTotBruOpeItem" es asignado en el momeno de la generacion del xml
+			// el valor del campo "dTotBruOpeItem" es asignado en el momento de la generacion del xml
 
 			// valores de descuentos por item
 			if (x.getgValorItem().getgValorRestaItem() != null) {
-				CamposDescuentosItem d = x.getgValorItem().getgValorRestaItem();
+				TmpFactuDE_E811 d = x.getgValorItem().getgValorRestaItem();
 				TgValorRestaItem gValorRestaItem = new TgValorRestaItem();
 				codePlace = "Asignar resta item";
 				if (d.getdDescItem().doubleValue() != 0.0) {
@@ -631,13 +692,21 @@ public class SendRcvMemosAsync {
 		codePlace = "Asignar lista lineas";
 		gDtipDE.setgCamItemList(gCamItemList);
 		DE.setgDtipDE(gDtipDE);
-		
+
+		// Grupo E
+		DE.setgTotSub(new TgTotSub());
+
+		/**
+        +-----------------------------------------------------------------------------+
+        | gCamDEAsoc - Documentos asociados a la operacion                            |
+        +-----------------------------------------------------------------------------+
+		 */
 		codePlace = "Asignar documentos asociados";
 		List<TgCamDEAsoc> gCamDEAsocList = new ArrayList<>();
-		ArrayList<CamposDEAsociado> dea = da.getDE().getgCamDEAsoc();
+		ArrayList<TmpFactuDE_H> dea = da.getGcamDEAsoc();
 		Iterator itr5 = dea.iterator();
 		while (itr5.hasNext()) {
-			CamposDEAsociado x = (CamposDEAsociado) itr5.next();
+			TmpFactuDE_H x = (TmpFactuDE_H) itr5.next();
 			TgCamDEAsoc gCamDEAsoc = new TgCamDEAsoc();
 			System.out.println("x.getiTipDocAso(): " + x.getiTipDocAso());
 			gCamDEAsoc.setiTipDocAso(TiTipDocAso.getByVal(x.getiTipDocAso()));
@@ -648,10 +717,10 @@ public class SendRcvMemosAsync {
 			if (gCamDEAsoc.getiTipDocAso().getVal() == TiTipDocAso.IMPRESO.getVal()) {
 				codePlace = "Asignar item " + x.getdEstDocAso() + "-" + x.getdPExpDocAso() + "-" + x.getdNumDocAso();
 			    gCamDEAsoc.setdEstDocAso(x.getdEstDocAso());
-			    s = sdf.format(x.getdFecEmiDI());
-			    gCamDEAsoc.setdFecEmiDI(LocalDate.parse(s));
+			    //s = sdf2.format(x.getdFecEmiDI());
+			    gCamDEAsoc.setdFecEmiDI(LocalDate.parse(x.getdFecEmiDI()));
 			    gCamDEAsoc.setdNTimDI(x.getdNTimDI());
-				gCamDEAsoc.setdNumDocAso(x.getdNumDocAso());
+				gCamDEAsoc.setdNumDocAso(x.getdNumDocAso()); 
 				gCamDEAsoc.setdPExpDocAso(x.getdPExpDocAso());
 				gCamDEAsoc.setiTipoDocAso(TiTIpoDoc.getByVal(x.getiTipoDocAso()));
 			}
@@ -664,10 +733,7 @@ public class SendRcvMemosAsync {
 			gCamDEAsocList.add(gCamDEAsoc);
 		}
 		DE.setgCamDEAsocList(gCamDEAsocList);
-
-		// Grupo E
-		DE.setgTotSub(new TgTotSub());
-
+		
 		// Grupo J
 		// Este codigo sera ejecutado solamente si el valor del codigo QR es asignado en forma previa a
 		// la preparacion del documento electronico para el envio.
@@ -677,17 +743,20 @@ public class SendRcvMemosAsync {
 		//    DE.setEnlaceQR(da.getgCamFuFD().getdCarQR());
 		//}
 
+		// aqui realizaremos algunas validaciones para evitar que lleguen objetos DE que no tengan algunos
+		// de sus atributos obligatorios
 
 		
 		
 		// generar el CDC si la transaccion aun no la tiene
-		if (da.getDE().getId() == null) {
+		if (da.getId() == null) {
 			codePlace = "Obtener CDC";
 			try {
 				String controlCode = DE.obtenerCDC(null);
 				String qrCode = DE.getEnlaceQR();
 				// actualizar en la tabla de transacciones los CDC generados en el momento del envio
-				RcvCustomersTrxDAO.updateControlCode(invoiceId, controlCode, qrCode, conn);
+				// desactivado para la aplicacion de Nider
+				//RcvCustomersTrxDAO.updateControlCode(invoiceId, controlCode, qrCode, conn);
 			} catch (SifenException e1) {
 				System.out.println(invoiceId + ": " + e1.getMessage());
 			} catch (Exception e2) {

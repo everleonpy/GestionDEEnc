@@ -5,6 +5,7 @@ public class RcvTrxEbBatch {
 	 * POJO que representa una fila de la tabla RCV_TRX_EB_BATCH
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	private String batchNumber;
     private String createdBy;
     private java.util.Date createdOn;

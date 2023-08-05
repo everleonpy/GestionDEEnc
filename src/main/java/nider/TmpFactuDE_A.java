@@ -1,5 +1,7 @@
 package nider;
 
+import java.util.ArrayList;
+
 public class TmpFactuDE_A {
 	/**
 	 * DE
@@ -18,6 +20,7 @@ public class TmpFactuDE_A {
 	private TmpFactuDE_C gTimb;
 	private TmpFactuDE_D gDatGralOpe;
 	private TmpFactuDE_E0 gTipDE;
+	private ArrayList<TmpFactuDE_H> gcamDEAsoc;
 	
 	public int getIdConfig() {
 		return idConfig;
@@ -84,6 +87,12 @@ public class TmpFactuDE_A {
 	}
 	public void setgTipDE(TmpFactuDE_E0 gTipDE) {
 		this.gTipDE = gTipDE;
+	}
+	public ArrayList<TmpFactuDE_H> getGcamDEAsoc() {
+		return gcamDEAsoc;
+	}
+	public void setGcamDEAsoc(ArrayList<TmpFactuDE_H> gcamDEAsoc) {
+		this.gcamDEAsoc = gcamDEAsoc;
 	}
 
 }

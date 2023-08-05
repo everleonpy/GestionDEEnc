@@ -336,7 +336,8 @@ public class InvShipmentsEbBatchesDAO {
 
 			StringBuffer buffer = new StringBuffer();
 			
-			buffer.append("select x.IDENTIFIER, x.ORG_ID, x.UNIT_ID, to_char(x.TRANSMISS_DATE, 'dd/mm/yyyy hh24:mi:ss') TRANSMISS_DATE,");
+			//buffer.append("select x.IDENTIFIER, x.ORG_ID, x.UNIT_ID, to_char(x.TRANSMISS_DATE, 'dd/mm/yyyy hh24:mi:ss') TRANSMISS_DATE,");
+			buffer.append("select x.IDENTIFIER, x.ORG_ID, x.UNIT_ID, x.TRANSMISS_DATE,");
 			buffer.append(" x.CREATED_BY, x.CREATED_ON, x.BATCH_NUMBER, x.RESULT_CODE,");
 			buffer.append(" x.RESULT_MESSAGE, x.PROCESS_TIME, x.QUERIED_FLAG, x.TRX_TYPE,");
 			buffer.append(" x.TRX_DATE, x.ITEMS_QTY");
@@ -383,8 +384,9 @@ public class InvShipmentsEbBatchesDAO {
 				o.setQueriedFlag(rs.getString("QUERIED_FLAG"));
 				o.setResultCode(rs.getInt("RESULT_CODE"));
 				o.setResultMessage(rs.getString("RESULT_MESSAGE"));
-				d = sdf.parse(rs.getString("TRANSMISS_DATE"));
-				o.setTransmissDate(d);
+				//d = sdf.parse(rs.getString("TRANSMISS_DATE"));
+				//o.setTransmissDate(d);
+				o.setTransmissDate(rs.getDate("TRANSMISS_DATE"));
 				o.setUnitId(rs.getLong("UNIT_ID"));	
 				o.setTrxType(rs.getString("TRX_TYPE"));
 				o.setTrxDate(rs.getDate("TRX_DATE"));

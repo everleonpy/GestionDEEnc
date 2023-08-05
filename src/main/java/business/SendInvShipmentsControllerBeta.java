@@ -245,7 +245,7 @@ public class SendInvShipmentsControllerBeta {
 
 
 	public ApplicationMessage initForm() {
-		posOpts = PosOptionsDAO.getRow(UserAttributes.userUnit.getIDENTIFIER());
+		posOpts = null; //PosOptionsDAO.getRow(UserAttributes.userUnit.getIDENTIFIER());
 		this.xmlFolder = "/Users/jota_ce/Documents/cacique-sifen/xml/";
 		clearFilters ();
 		return null;

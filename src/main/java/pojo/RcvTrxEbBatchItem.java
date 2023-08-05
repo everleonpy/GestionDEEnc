@@ -1,10 +1,12 @@
 package pojo;
 
-public class RcvTrxEbBatchItem {
+public class RcvTrxEbBatchItem 
+{
     /**
-	 * POJO que representa una fila de la tabla RCV_TRX_EB_BATCH_ITEM
-	 */
+	* POJO que representa una fila de la tabla RCV_TRX_EB_BATCH_ITEM
+	*/
 	private static final long serialVersionUID = 1L;
+	
 	private long batchId;
     private String controlCode;
     private String createdBy;
@@ -15,6 +17,7 @@ public class RcvTrxEbBatchItem {
     private String resultMessage;
     private String resultStatus;
     private long resultTxNumber;
+    // FK Cabezera de Ventas 
     private long transactionId;
     private long unitId;
     private String txNumber;

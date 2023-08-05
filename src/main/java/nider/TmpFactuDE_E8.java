@@ -1,6 +1,7 @@
 package nider;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class TmpFactuDE_E8 {
 	/**
@@ -111,10 +112,10 @@ public class TmpFactuDE_E8 {
 		this.dDesUniMed = dDesUniMed;
 	}
 	public BigDecimal getdCantProSer() {
-		return dCantProSer;
+		return dCantProSer.setScale(4, RoundingMode.CEILING);
 	}
 	public void setdCantProSer(BigDecimal dCantProSer) {
-		this.dCantProSer = dCantProSer;
+		this.dCantProSer = dCantProSer.setScale(4, RoundingMode.CEILING);
 	}
 	public String getcPaisOrig() {
 		return cPaisOrig;

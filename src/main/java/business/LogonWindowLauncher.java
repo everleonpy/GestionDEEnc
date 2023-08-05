@@ -1,5 +1,7 @@
 package business;
 
+import java.awt.EventQueue;
+
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -13,7 +15,18 @@ import gui.LogonWindow;
 public class LogonWindowLauncher {
 	
 	public LogonWindowLauncher () {
-		new LogonWindow ( );
+		
+		EventQueue.invokeLater(new Runnable() {
+			public void run() {
+				try {
+					new LogonWindow ( );
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+	 
 	}
 
 	public static void main (String args []) {

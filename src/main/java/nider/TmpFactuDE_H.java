@@ -10,9 +10,9 @@ public class TmpFactuDE_H {
 	private short iTipDocAso;
 	private String dDesTipDocAso;
 	private String dCdCDERef;
-	private int dNTimDI;
-	private short dEstDocAso;
-	private short dPExpDocAso;
+	private String dNTimDI;
+	private String dEstDocAso;
+	private String dPExpDocAso;
 	private String dNumDocAso;
 	private short iTipoDocAso;
 	private String dDTipoDocAso;
@@ -54,22 +54,22 @@ public class TmpFactuDE_H {
 	public void setdCdCDERef(String dCdCDERef) {
 		this.dCdCDERef = dCdCDERef;
 	}
-	public int getdNTimDI() {
+	public String getdNTimDI() {
 		return dNTimDI;
 	}
-	public void setdNTimDI(int dNTimDI) {
+	public void setdNTimDI(String dNTimDI) {
 		this.dNTimDI = dNTimDI;
 	}
-	public short getdEstDocAso() {
+	public String getdEstDocAso() {
 		return dEstDocAso;
 	}
-	public void setdEstDocAso(short dEstDocAso) {
+	public void setdEstDocAso(String dEstDocAso) {
 		this.dEstDocAso = dEstDocAso;
 	}
-	public short getdPExpDocAso() {
+	public String getdPExpDocAso() {
 		return dPExpDocAso;
 	}
-	public void setdPExpDocAso(short dPExpDocAso) {
+	public void setdPExpDocAso(String dPExpDocAso) {
 		this.dPExpDocAso = dPExpDocAso;
 	}
 	public String getdNumDocAso() {

@@ -239,8 +239,9 @@ public class SendRcvMemosControllerBeta {
 
 
 	public ApplicationMessage initForm() {
-		posOpts = PosOptionsDAO.getRow(UserAttributes.userUnit.getIDENTIFIER());
+		// posOpts = PosOptionsDAO.getRow(UserAttributes.userUnit.getIDENTIFIER()); // AVanza ...
 		this.xmlFolder = "/Users/jota_ce/Documents/cacique-sifen/xml/";
+		// this.xmlFolder = "c://xml/";
 		clearFilters ();
 		return null;
 	}   
@@ -316,6 +317,7 @@ public class SendRcvMemosControllerBeta {
 			// aqui se somete la entrada a un formateo previo que permite traducir las entradas
 			// con formatos abreviados de fecha
 			String v = this.formatDate(s);
+			
 			try {
 				d = sdf.parse(v);
 			} catch (ParseException e) {
@@ -323,6 +325,7 @@ public class SendRcvMemosControllerBeta {
 				aMsg.setMessage("DATE-FORMAT", "Formato de fecha no valido", ApplicationMessage.ERROR);
 				return aMsg;    			
 			}
+			
 			this.setTrxDate(d);
 			return null;
 		} else {
@@ -507,6 +510,7 @@ public class SendRcvMemosControllerBeta {
 	public ApplicationMessage sendTxBatch ( ) {
 		ApplicationMessage m = new ApplicationMessage();
 		try {
+			/*
 			if (this.firstGroup == 0) {
 				PrepareTxParams o = RcvEbInvoicesDAO.findPreparedInfo(NOTA_CREDITO, this.trxDate);
 				if (o != null) {
@@ -517,21 +521,20 @@ public class SendRcvMemosControllerBeta {
 					this.lastGroup = 0;					
 				}
 			}
-			if (this.firstGroup > 0) {
+			*/
+			//if (this.firstGroup > 0) {
 			    System.out.println("parametros envio: " + this.trxDate + " - " + this.firstGroup + " - " + this.lastGroup);
 		        SendRcvMemosAsync t = new SendRcvMemosAsync();
 		        m = t.sendDeBatch ( "NOTA-CREDITO", 
 		    		                    this.trxDate, 
-		    		                    this.firstGroup, 
-		    		                    this.lastGroup,
 		    		                    UserAttributes.userOrg.getIDENTIFIER(), 
 		    		                    UserAttributes.userUnit.getIDENTIFIER(), 
 		    		                    UserAttributes.userName );
 			    return m;
-			} else {
-				m.setMessage("SEND-TRX", "No se han preparado los datos para el envio", ApplicationMessage.ERROR);
-				return m;				
-			}
+			//} else {
+			//	m.setMessage("SEND-TRX", "No se han preparado los datos para el envio", ApplicationMessage.ERROR);
+			//	return m;				
+			//}
 		} catch ( SifenException e1 ) {
 			m.setMessage("SEND-TRX", e1.getMessage(), ApplicationMessage.ERROR);
 			return m;

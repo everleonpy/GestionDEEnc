@@ -2,10 +2,15 @@ package dao;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+
+import org.apache.commons.math3.util.Precision;
 
 import nider.TmpFactuDE_A;
 import nider.TmpFactuDE_B;
@@ -50,7 +55,7 @@ public class FacturaElectronicaDAO {
 		try {
 			conn = Util.getConnection();
 			if (conn == null) {
-				return null;
+				return null; 
 			}
 
 			// ejecutar la consulta de base de datos
@@ -60,29 +65,51 @@ public class FacturaElectronicaDAO {
 			fromDate = trxDate;
 			toDate = UtilPOS.addDaysToDate(fromDate, 1);
 			
-			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.idMov, x.dVerFor, x.Id,");
-			buffer.append(" x.dDVId, x.dSisFact, x.dFecFirma");
+			//TODO  datos de la cabecera de la transaccion 
+			/*buffer.append("select x.idConfig, x.idMov, x.dVerFor, x.Id,");
+			buffer.append(" x.dDVId, x.dSisFact, x.dFecFirma"); 
 			buffer.append(" from tmpFactuDE_A x");
-
-		    //buffer.append(" where not exists ( select 1");
-		    //buffer.append(" from RCV_TRX_EB_BATCH_ITEMS b");
-		    //buffer.append(" where upper(nvl(b.RESULT_STATUS, 'Rechazado')) = 'APROBADO'");
-		    //buffer.append(" and b.TRANSACTION_ID = h.IDENTIFIER )");
-			
-			buffer.append(" where x.fechaFactura < ?");
+			//
+		    buffer.append(" where not exists ( select 1");
+		    buffer.append(" from RCV_TRX_EB_BATCH_ITEMS b");
+		    buffer.append(" where upper(nvl(b.RESULT_STATUS, 'Rechazado')) = 'APROBADO'");
+		    buffer.append(" and b.TRANSACTION_ID = h.IDENTIFIER )");
+			//
+			buffer.append(" and x.fechaFactura < ?");
 			buffer.append(" and x.fechaFactura >= ?");
 			buffer.append(" order by x.idMov");
+			*/
+			
+			//TODO Nuevo Select Via Nider -----
+			//System.out.println("Fecha Desde : "+DatetoString(fromDate)+"  Hasta : "+DatetoString(fromDate));
+			buffer.append(" select tmp.idConfig, tmp.idMov, tmp.dVerFor, tmp.Id, tmp.dDVId, tmp.dSisFact, tmp.dFecFirma");
+			buffer.append(" from tmpFactuDE_A tmp inner join tmpFactuDE_C c  on tmp.idMov=c.idMov");
+			buffer.append(" where tmp.fechaFactura >= '"+DatetoString(fromDate)+"'");
+			buffer.append(" and tmp.fechaFactura <= '"+DatetoString(fromDate)+"'");
+			buffer.append(" and c.iTiDE=1");
+			buffer.append(" and tmp.idMov not in(select transaction_id from RCV_TRX_EB_BATCH_ITEMS where result_status='Aprobado')");
+			//buffer.append(" and convert(varchar,tmp.fechaFactura,103)>=convert(varchar,?,103)"); 
+			//buffer.append(" and convert(varchar,tmp.fechaFactura,103)<=convert(varchar,?,103)");
+			buffer.append(" order by tmp.idMov");
+		
+			System.out.println("*************************************************************************");
+			System.out.println("SQL : "+buffer.toString());
+			System.out.println("*************************************************************************");
+			
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			index++;
-			ps.setTimestamp(index, new Timestamp(toDate.getTime()));
+			
+			//ps.setTimestamp(index, new Timestamp(toDate.getTime()));
+			//ps.setDate(index, new Date(toDate.getTime()));
 			index++;
-			ps.setTimestamp(index, new Timestamp(fromDate.getTime()));
-			System.out.println("Consultando fechas desde: " + fromDate + " hasta: " + toDate);
+			//ps.setTimestamp(index, new Timestamp(fromDate.getTime()));
+			//ps.setDate(index, new Date(fromDate.getTime()));
+			//System.out.println("Consultando fechas desde: " + fromDate + " hasta: " + toDate);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			ArrayList<TmpFactuDE_A> deList = new ArrayList<TmpFactuDE_A>();
+			
 			while (rs.next()) {
 				dataFound = true;
 				idMov = rs.getInt("idMov");
@@ -989,13 +1016,13 @@ public class FacturaElectronicaDAO {
 				TmpFactuDE_E721 o = new TmpFactuDE_E721();
 				o.setcMoneCuo(rs.getString("cMoneCuo"));
 				o.setdDMoneCuo(rs.getString("dDMoneCuo"));
-				o.setdMonCuota(rs.getDouble("dMonCuota"));
+				o.setdMonCuota( Precision.round(rs.getDouble("dMonCuota"),4) );
 				o.setdVencCuo(rs.getString("dVencCuo"));				
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
 				lst.add(o);
-				//
-				//System.out.println("TmpFactuDE_E721: " + rs.getString("cMoneCuo") + " - " + rs.getShort("dDMoneCuo"));				
+				
+				System.out.println(FacturaElectronicaDAO.class.getName()+"  o.setdMonCuota : "+o.getdMonCuota());
 			}
 			if (dataFound == true) {
 				return lst;
@@ -1230,6 +1257,15 @@ public class FacturaElectronicaDAO {
 			Util.closeResultSet(rs);
 			Util.closeStatement(ps);
 		}	
+	}
+	
+	
+	
+	
+	private static String DatetoString(java.util.Date toDate) 
+	{
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");  
+		return dateFormat.format(toDate);
 	}
 
 }

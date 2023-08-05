@@ -214,8 +214,8 @@ public class DocumentoElectronico extends SifenObjectBase {
         // Obtenemos el xml en string
         String xml = this.generarXml(sifenConfig);
 
-        //System.out.println("****************imprimiendo xml");
-        //System.out.println(xml);
+        System.out.println("****************imprimiendo xml");
+        System.out.println(xml);
 
         
         // Creamos o modificamos el archivo, y escribimos en él el xml.

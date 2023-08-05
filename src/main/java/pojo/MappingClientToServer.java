@@ -1,5 +1,6 @@
 package pojo;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -254,7 +255,7 @@ public class MappingClientToServer {
 				XgCuotas s = (XgCuotas) itr3.next();
 				TgCuotas t = new TgCuotas();
 				t.setcMoneCuo(CMondT.getByName(s.getcMoneCuo()));
-				t.setdMonCuota(s.getdMonCuota());
+				t.setdMonCuota( s.getdMonCuota().setScale(4, RoundingMode.UNNECESSARY) );
 				ld = LocalDate.parse(s.getdVencCuo(), dFmtr);
 				t.setdVencCuo(ld);
 				//

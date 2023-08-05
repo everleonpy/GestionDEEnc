@@ -83,7 +83,6 @@ import util.ListOfValuesItem;
 	        }
 	    } catch (Exception e) {
 	    	e.printStackTrace();
-	        e.printStackTrace();
 	        return null;
 	    } finally {
 	        Util.closeResultSet(rsConsulta);

@@ -8,6 +8,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.commons.math3.util.Precision;
+
 import com.roshka.sifen.core.beans.DocumentoElectronico;
 import com.roshka.sifen.core.fields.request.de.TgActEco;
 import com.roshka.sifen.core.fields.request.de.TgCamCond;
@@ -1231,7 +1233,12 @@ public class FacturaElectronicaDAOOld {
 					    EbGcuotas cuo = new EbGcuotas();
 					    cuo.setCmonecuo(x.getcMoneCuo().name());
 					    cuo.setDdmonecuo(x.getcMoneCuo().getDescripcion());
-					    cuo.setDmoncuota(x.getdMonCuota().doubleValue());
+					    cuo.setDmoncuota( Precision.round(x.getdMonCuota().doubleValue(),4) );
+					    
+					    System.out.println("****************************************");
+					    System.out.println("** MONTO CUOTA BRUTO : "+cuo.getDmoncuota() );
+					    System.out.println("*****************************************");
+					    
 					    if (x.getdVencCuo() != null) {
 					        cuo.setDvenccuo(java.sql.Date.valueOf(x.getdVencCuo()));
 					    }

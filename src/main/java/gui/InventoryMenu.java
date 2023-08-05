@@ -555,7 +555,7 @@ public class InventoryMenu extends JFrame {
 	
 	public ImageIcon getScaledIcon (String iconName, int width, int height) {
 		//ImageIcon icon = new ImageIcon(iconName);
-		ImageIcon icon = new ImageIcon(getClass().getResource(iconName));
+		ImageIcon icon = new ImageIcon(getClass().getResource("/"+iconName));
 		Image img = icon.getImage();  
 		Image newimg = img.getScaledInstance(width, height,  java.awt.Image.SCALE_SMOOTH);  
 		ImageIcon newIcon = new ImageIcon(newimg);

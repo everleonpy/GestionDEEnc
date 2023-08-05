@@ -1,0 +1,9 @@
+select tmp.idConfig, tmp.idMov, tmp.dVerFor, tmp.Id, tmp.dDVId, tmp.dSisFact,tmp.dFecFirma,
+tmp.fechaFactura 
+from tmpFactuDE_A tmp inner join tmpFactuDE_C c
+on tmp.idMov=c.idMov
+where tmp.fechaFactura >= '2023-07-07'
+and tmp.fechaFactura <= '2023-07-07'
+and c.iTiDE=1
+and tmp.idMov not in(select transaction_id from RCV_TRX_EB_BATCH_ITEMS where result_status='Aprobado')
+order by tmp.idMov

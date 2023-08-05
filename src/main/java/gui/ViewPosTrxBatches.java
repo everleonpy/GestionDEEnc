@@ -229,7 +229,7 @@ public class ViewPosTrxBatches extends JFrame {
 			int w = h * 2;
 			jlVendorLogo.setSize(new Dimension(w, h));
 			jlVendorLogo.setLocation(new Point(10, 0));
-			String archivoImg = "softpoint-avanza.jpg";
+			String archivoImg = "/softpoint-avanza.jpg";
 			h = h - 20;
 			ImageIcon i = getScaledIcon(archivoImg, w, h);
 			jlVendorLogo.setIcon(i);

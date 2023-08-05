@@ -65,7 +65,19 @@
 	        <version>3.4.2</version>
 	        <type>maven-plugin</type>
 	    </dependency>
-	         
+	    
+	    <dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-math3</artifactId>
+		    <version>3.5</version>
+		</dependency>
+		
+		<dependency>
+		   <groupId>xerces</groupId>
+		   <artifactId>xercesImpl</artifactId>
+		   <version>2.9.0</version>
+		</dependency>
+		     
     </dependencies>
     
     
@@ -94,7 +106,8 @@
 		          </descriptorRefs>
 		          <archive>
 		              <manifest>
-		                <mainClass>business.LogonWindowLauncher</mainClass>
+		                <!-- mainClass>business.LogonWindowLauncher</mainClass -->
+		               <mainClass>gui.CheckDataDE</mainClass>
 		              </manifest>
 		          </archive>
 		      </configuration>

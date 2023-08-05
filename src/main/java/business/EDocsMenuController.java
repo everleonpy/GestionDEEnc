@@ -12,7 +12,7 @@ public class EDocsMenuController {
      * |                                                             | 
      * +-------------------------------------------------------------+	
      */
-	private String [] menuItems = {" Facturas y Notas", " Remisiones", " Salir"};
+	private String [] menuItems = {" Facturas y Notas", " Remisiones"," Check Status DE" ," Salir"};
 	private String selectedOption;
 
 	public String[] getMenuItems() {

@@ -1,6 +1,7 @@
 package pojo;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 public class XgCuotas {
@@ -17,11 +18,11 @@ public class XgCuotas {
     }
 
     public BigDecimal getdMonCuota() {
-        return dMonCuota;
+        return dMonCuota.setScale(4, RoundingMode.UNNECESSARY);
     }
 
     public void setdMonCuota(BigDecimal dMonCuota) {
-        this.dMonCuota = dMonCuota;
+        this.dMonCuota = dMonCuota.setScale(4, RoundingMode.UNNECESSARY);
     }
 
     public String getdVencCuo() {

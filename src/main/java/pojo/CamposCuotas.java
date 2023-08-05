@@ -1,5 +1,7 @@
 package pojo;
 
+import org.apache.commons.math3.util.Precision;
+
 public class CamposCuotas {
 	// +------------------------------------------------------------------------------------------+
 	// | Grupo       | E7.2.1                                                                     |
@@ -26,10 +28,10 @@ public class CamposCuotas {
 		this.dDMoneCuo = dDMoneCuo;
 	}
 	public double getdMonCuota() {
-		return dMonCuota;
+		return Precision.round(dMonCuota,4);
 	}
 	public void setdMonCuota(double dMonCuota) {
-		this.dMonCuota = dMonCuota;
+		this.dMonCuota = Precision.round(dMonCuota,4);
 	}
 	public java.util.Date getdVencCuo() {
 		return dVencCuo;

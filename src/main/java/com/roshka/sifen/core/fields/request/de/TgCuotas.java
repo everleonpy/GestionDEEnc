@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 
 public class TgCuotas extends SifenObjectBase {
@@ -50,7 +51,7 @@ public class TgCuotas extends SifenObjectBase {
     }
 
     public BigDecimal getdMonCuota() {
-        return dMonCuota;
+        return dMonCuota; 
     }
 
     public void setdMonCuota(BigDecimal dMonCuota) {

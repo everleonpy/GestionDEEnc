@@ -1,5 +1,7 @@
 package nider;
 
+import org.apache.commons.math3.util.Precision;
+
 public class TmpFactuDE_E721 {
 	/**
 	 * gCuotas
@@ -37,10 +39,12 @@ public class TmpFactuDE_E721 {
 		this.dDMoneCuo = dDMoneCuo;
 	}
 	public double getdMonCuota() {
-		return dMonCuota;
+		Double resp = Precision.round(dMonCuota, 4);
+		return resp;
 	}
 	public void setdMonCuota(double dMonCuota) {
-		this.dMonCuota = dMonCuota;
+		Double resp = Precision.round(dMonCuota, 4);
+		this.dMonCuota = resp;
 	}
 	public String getdVencCuo() {
 		return dVencCuo;

@@ -157,8 +157,11 @@ public class SendInvShipmentsAsync {
 						if (DE.getId() != null) {
 							System.out.println("Registrando documento electronico: " + x.getIdMov() + " - " + DE.getId());
 							deList.add(DE);
-							fileName = "/Users/jota_ce/Documents/jl-sifen/xml/remisiones/" + 
+							fileName = "c:/xml/shp/" + 
 									String.valueOf(x.getIdMov()) + ".xml";
+							System.err.println("********************************************************");
+							System.out.println(" ARCHIVO XML REMISION : "+fileName);
+							System.err.println("********************************************************");
 							try {
 								fileCreated = DE.generarXml(fileName);
 							} catch ( Exception e) {
@@ -352,13 +355,17 @@ public class SendInvShipmentsAsync {
 			TgOpeDE gOpeDE;
 			if (da.getId() != null) {
 				gOpeDE = new TgOpeDE(da.getId());
-			} else {
+			} else { 
 				gOpeDE = new TgOpeDE(null);
 			}
 			gOpeDE.setiTipEmi(TTipEmi.getByVal(da.getgOpeDe().getiTipEmi()));
 			// esta informacion la completa el paquete de Roshka
 			//gOpeDE.setdInfoEmi(da.getDE().getgOpeDE().getdInfoEmi());
 			//gOpeDE.setdInfoFisc(da.getDE().getgOpeDE().getdInfoFisc());
+			System.out.println("*******************************************************************");
+			System.out.println("**** DINFOFISC : " + da.getgOpeDe().getdInfoFisc());
+			System.out.println("*******************************************************************");
+			gOpeDE.setdInfoFisc(da.getgOpeDe().getdInfoFisc());
 			DE.setgOpeDE(gOpeDE);
 
 			// Grupo C
@@ -531,8 +538,13 @@ public class SendInvShipmentsAsync {
 			codePlace = "Asignar gCamNRE";
 			TgCamNRE gCamNRE = new TgCamNRE();
 			TmpFactuDE_E6 re = da.getgTipDE().getgCamNRE();
-			s = sdf1.format(re.getdFecEm());
-			gCamNRE.setdFecEm(LocalDate.parse(s));
+			
+			if( re.getdFecEm() != null ) 
+			{
+				//s = sdf2.format(re.getdFecEm());
+				gCamNRE.setdFecEm(LocalDate.parse(re.getdFecEm()));
+			}
+			
 			gCamNRE.setdKmR(re.getdKmR());
 			gCamNRE.setiMotEmiNR(TiMotivTras.getByVal(re.getiMotEmiNR()));
 			gCamNRE.setiRespEmiNR(TiRespEmiNR.getByVal(re.getiRespEmiNR()));
@@ -630,16 +642,17 @@ public class SendInvShipmentsAsync {
 			gTransp.setcCondNeg(TcCondNeg.getByDescription(tm.getcCondNeg()));
 			gTransp.setdNuManif(tm.getdNuManif());
 			gTransp.setdNuDespImp(tm.getdNuDespImp());
+			
 			if (tm.getdIniTras() != null) {
-				s = sdf1.format(tm.getdIniTras());
-			    LocalDate ld = LocalDate.parse(s);
+				//s = sdf2.format(tm.getdIniTras());
+			    LocalDate ld = LocalDate.parse(tm.getdIniTras());
 			    gTransp.setdIniTras(ld);
 			} else {
 				gTransp.setdIniTras(null);			
 			}
 			if (tm.getdFinTras() != null) {
-				s = sdf1.format(tm.getdFinTras());
-			    LocalDate ld = LocalDate.parse(s);
+				//s = sdf2.format(tm.getdFinTras());
+			    LocalDate ld = LocalDate.parse(tm.getdFinTras());
 			    gTransp.setdFinTras(ld);
 			} else {
 			    gTransp.setdFinTras(null);			
@@ -653,6 +666,9 @@ public class SendInvShipmentsAsync {
 			// campos que identifican la salida de las mercaderias
 			TmpFactuDE_E101 sm = tm.getgCamSal();
 			TgCamSal gCamSal = new TgCamSal();
+			System.out.println("**********************************");
+			System.out.println("****** "+sm.getdDirLocSal() );
+			System.out.println("**********************************");
 			gCamSal.setdDirLocSal(sm.getdDirLocSal());
 			gCamSal.setdNumCasSal(sm.getdNumCasSal());
 			gCamSal.setdComp1Sal(sm.getdComp1Sal());

@@ -309,7 +309,8 @@ public class EDocsMenu extends JFrame {
 					jlAction2.repaint();
 				}
 			});
-			//
+			
+			//Check Status
 			idx++;
 			jlAction3 = new JLabel();
 			jlAction3.setSize(new Dimension(tbtnWidth, tbtnHeight));
@@ -323,7 +324,8 @@ public class EDocsMenu extends JFrame {
 			jlAction3.setHorizontalAlignment(SwingConstants.LEFT);
 			jlAction3.addMouseListener(new MouseAdapter() {  
 			    public void mouseClicked(MouseEvent e) {  
-			    	    requestLeaving();
+			    		openChecStatusGui();
+			    	    //requestLeaving();
 			    } 
 				public void mouseEntered (MouseEvent evt) {
 					jlAction3.setBackground(appLook.getSelMenuBg());
@@ -336,10 +338,46 @@ public class EDocsMenu extends JFrame {
 					jlAction3.repaint();
 				}
 			});
+			
+			
+			// Salir
+			idx++;
+			jlAction4 = new JLabel();
+			jlAction4.setSize(new Dimension(tbtnWidth, tbtnHeight));
+			xPos = xPos + tbtnWidth;
+			jlAction4.setLocation(new Point(xPos, 1));
+			jlAction4.setText(ctrl.getMenuItems()[idx]);
+			jlAction4.setBackground(appLook.getMenuBg());
+			jlAction4.setForeground(appLook.getMenuFg());
+			jlAction4.setFont(appLook.getSmallFont());
+			jlAction4.setOpaque(true);
+			jlAction4.setHorizontalAlignment(SwingConstants.LEFT);
+			jlAction4.addMouseListener(new MouseAdapter() {  
+			    public void mouseClicked(MouseEvent e) {  
+			    	    requestLeaving();
+			    } 
+				public void mouseEntered (MouseEvent evt) {
+					jlAction4.setBackground(appLook.getSelMenuBg());
+					jlAction4.setForeground(appLook.getSelMenuFg());
+					jlAction4.repaint();
+				}
+				public void mouseExited (MouseEvent evt) {
+					jlAction4.setBackground(appLook.getMenuBg());
+					jlAction4.setForeground(appLook.getMenuFg());
+					jlAction4.repaint();
+				}
+			});
+			
+			
+			
+			
+			
 			//
 			jpToolbar.add(jlAction1, null);
 			jpToolbar.add(jlAction2, null);
 			jpToolbar.add(jlAction3, null);
+			jpToolbar.add(jlAction4, null);
+			
 		}
 		return jpToolbar;
 	}
@@ -415,8 +453,16 @@ public class EDocsMenu extends JFrame {
 		   endProgram();
 	   }
     }
+    
+    
+    public void openChecStatusGui()
+    {
+    	new ViewRcvTrxBatches();
+    	this.dispose();
+    }
 	
-	private void openReceivablesMenu () {
+	private void openReceivablesMenu () 
+	{
 		new ReceivablesMenu();
 		this.dispose();
 	}
@@ -426,7 +472,8 @@ public class EDocsMenu extends JFrame {
 		this.dispose();
 	}
 
-	private int getRelativeWidth (int h, double p) {
+	private int getRelativeWidth (int h, double p) 
+	{
 		double baseValue = (double) h;
 		double pctValue = p / 100.0;
 		double d = baseValue * pctValue;

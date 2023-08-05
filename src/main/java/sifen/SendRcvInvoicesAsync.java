@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -378,6 +379,7 @@ public class SendRcvInvoicesAsync {
 		// esta informacion la completa el paquete de Roshka
 		//gOpeDE.setdInfoEmi(da.getDE().getgOpeDE().getdInfoEmi());
 		//gOpeDE.setdInfoFisc(da.getDE().getgOpeDE().getdInfoFisc());
+		gOpeDE.setdInfoFisc(da.getgOpeDe().getdInfoFisc());
 		DE.setgOpeDE(gOpeDE);
 
 		// Grupo C
@@ -568,9 +570,10 @@ public class SendRcvInvoicesAsync {
 		TgCamFE gCamFE = new TgCamFE();
 		TmpFactuDE_E fe = da.getgTipDE().getgCamFE();
 		gCamFE.setiIndPres(TiIndPres.getByVal(fe.getiIndPres()));
+		
 		if (fe.getdFecEmNR() != null) {
-			s = sdf1.format(fe.getdFecEmNR());
-			gCamFE.setdFecEmNR(LocalDate.parse(s));
+			//s = sdf1.format(fe.getdFecEmNR());
+			gCamFE.setdFecEmNR(LocalDate.parse(fe.getdFecEmNR()));
 		}
 		gDtipDE.setgCamFE(gCamFE);
 
@@ -649,6 +652,7 @@ public class SendRcvInvoicesAsync {
 			codePlace = "Asignar gPagCred";
 			TmpFactuDE_E72 cr = co.getgPagCred();
 			TgPagCred gPagCred = new TgPagCred();
+			
 			gPagCred.setiCondCred(TiCondCred.getByVal(cr.getiCondCred()));
 			if (cr.getdPlazoCre() != null) {
 				gPagCred.setdPlazoCre(cr.getdPlazoCre());
@@ -665,14 +669,29 @@ public class SendRcvInvoicesAsync {
 				List<TgCuotas> gTgCuotasList = new ArrayList<>();
 				ArrayList<TmpFactuDE_E721> cn = cr.getInstsList();
 				Iterator itr3 = cn.iterator();
+				
 				while (itr3.hasNext()) {
 					TmpFactuDE_E721 x = (TmpFactuDE_E721) itr3.next();
 					TgCuotas gCuota = new TgCuotas();
 					gCuota.setcMoneCuo(CMondT.getByName(x.getcMoneCuo()));
-					gCuota.setdMonCuota(new BigDecimal(x.getdMonCuota()));
+					gCuota.setdMonCuota(new BigDecimal(x.getdMonCuota()).setScale(4, RoundingMode.CEILING));
+					
+					System.out.println("*********************************************************");
+					System.out.println("** MONTO CUOTO      : "+gCuota.getdMonCuota());
+					System.out.println("** MONTO REDONDEADO : "+gCuota.getdMonCuota().setScale(4, RoundingMode.CEILING));
+					System.out.println("*********************************************************");
+					
 					if (x.getdVencCuo() != null) {
-						s = sdf2.format(x.getdVencCuo());
-						gCuota.setdVencCuo(LocalDate.parse(s));
+						//s = sdf2.format(x.getdVencCuo());
+						System.out.println("*********************************************************");
+						System.out.println("Fecha de Cuota : "+x.getdVencCuo());
+						System.out.println("*********************************************************");
+						DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+						
+						//
+						//TODO Pasar de String a Date ya que el campo que viene de la Base de datos es String
+						//-----
+						gCuota.setdVencCuo(LocalDate.parse(x.getdVencCuo(), formatter));
 					}
 					gTgCuotasList.add(gCuota);
 				}
@@ -761,7 +780,7 @@ public class SendRcvInvoicesAsync {
 			codePlace = "Asignar gValorItem";
 			if (x.getgValorItem().getdTiCamIt() != null) {
 				if (x.getgValorItem().getdTiCamIt().doubleValue() != 0.0) {
-					gValorItem.setdTiCamIt(x.getgValorItem().getdTiCamIt());
+					gValorItem.setdTiCamIt(x.getgValorItem().getdTiCamIt()); 
 				}
 			}
 			// el valor del campo "dTotBruOpeItem" es asignado en el momento de la generacion del xml
@@ -840,7 +859,6 @@ public class SendRcvInvoicesAsync {
 			}
 		}
 
-		
 		
 		// generar el CDC si la transaccion aun no la tiene
 		if (da.getId() == null) {
@@ -941,6 +959,7 @@ public class SendRcvInvoicesAsync {
         	    		if (tmp != null) {
         	    			try {
         	    			    ArrayList<gResProcLote> deRest = (ArrayList<gResProcLote>) tmp.getBody().getrResEnviConsLoteDe().getgResProcLote();
+        	    			    
         	    			    Iterator itr2 = deRest.iterator();
         	    			    while (itr2.hasNext()) {
         	    				    gResProcLote r = (gResProcLote) itr2.next();

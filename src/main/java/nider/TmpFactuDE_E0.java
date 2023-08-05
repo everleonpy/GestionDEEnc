@@ -8,7 +8,8 @@ public class TmpFactuDE_E0 {
 	 * Campos específicos por tipo de Documento Electronico
 	 */
     private TmpFactuDE_E gCamFE;
-    private TmpFactuDE_E7 gCamCond;
+    private TmpFactuDE_E5 gCamNCDE;
+	private TmpFactuDE_E7 gCamCond;
     private ArrayList<TmpFactuDE_E8> itemsList;
     private TmpFactuDE_E6 gCamNRE;
     private TmpFactuDE_E10 gTransp;
@@ -21,6 +22,14 @@ public class TmpFactuDE_E0 {
 		this.gCamFE = gCamFE;
 	}
 
+    public TmpFactuDE_E5 getgCamNCDE() {
+		return gCamNCDE;
+	}
+
+	public void setgCamNCDE(TmpFactuDE_E5 gCamNCDE) {
+		this.gCamNCDE = gCamNCDE;
+	}
+	
 	public TmpFactuDE_E7 getgCamCond() {
 		return gCamCond;
 	}

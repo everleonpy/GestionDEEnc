@@ -6,17 +6,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
+import dto.RcvTrxEbBatchItemDTO;
 import pojo.RcvTrxEbBatchItem;
 
 public class RcvTrxEbBatchItemsDAO {
 	
 	public static ArrayList<RcvTrxEbBatchItem> getList ( long batchId ) {
+		
 		Connection conn =  null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
+		@SuppressWarnings("unused")
 		java.util.Date d = null;    
+		@SuppressWarnings("unused")
 		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		ArrayList<RcvTrxEbBatchItem> l;
 
@@ -325,5 +331,86 @@ public class RcvTrxEbBatchItemsDAO {
 			Util.closeStatement(stmtUpdate);
 		}
 	}
+	
+	
+	/**
+	* 
+	* @param dateProc
+	* @return
+	*/
+	public static List<RcvTrxEbBatchItemDTO> getCDC(Date dateProc) 
+	{
+	
+		Connection conn = null;
+		PreparedStatement stmtConsulta = null;
+		ResultSet rsConsulta = null;
+		
+		try {
+			conn = Util.getConnection();
+			
+			if( conn == null ) 
+			{
+				throw new SQLException("No hay conexion con base de datos");
+			}
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(" select cv.idVenta,dvd.cdc,cab.transmiss_date,det.result_status ");
+			sb.append(" from RCV_TRX_EB_BATCHES cab inner join RCV_TRX_EB_BATCH_ITEMS det ");
+			sb.append(" on cab.identifier=det.batch_id ");
+			sb.append(" inner join cabVenta cv ");
+			sb.append(" on cv.idVenta=det.transaction_id ");
+			//sb.append(" inner join detVentaTipoPago dv ");
+			//sb.append(" on dv.idVenta=cv.idVenta ");
+			sb.append(" inner join v_sucursal _vs ");
+			sb.append(" on _vs.idSucursal=cv.idSucursal ");
+			sb.append(" inner join detVentaDTE dvd ");
+			sb.append(" on dvd.idVenta=cv.idVenta ");
+			sb.append(" where cab.trx_type='FACTURA' ");
+			sb.append(" and det.result_status is Null ");
+			sb.append(" and cab.transmiss_date = ?");
+			
+			stmtConsulta = conn.prepareStatement(sb.toString());
+			stmtConsulta.setDate(1,new java.sql.Date(dateProc.getTime()));
+			
+			rsConsulta = stmtConsulta.executeQuery();
+			List<RcvTrxEbBatchItemDTO> resp = new ArrayList<RcvTrxEbBatchItemDTO>();
+			System.out.println("PRE-EXECUTE");
+			
+			while (rsConsulta.next()) 
+			{
+				
+				RcvTrxEbBatchItemDTO x = new RcvTrxEbBatchItemDTO();
+				
+				x.setIdVenta(rsConsulta.getLong("idVenta"));
+				x.setCdc(rsConsulta.getString("cdc"));
+				
+				if(rsConsulta.getDate("transmiss_date") != null ) {
+					x.setTransmissDate(rsConsulta.getDate("transmiss_date"));
+				}
+				if(rsConsulta.getString("result_status") != null ) {
+					x.setResultStatusng(rsConsulta.getString("result_status"));
+				}
+			
+				resp.add(x);
+				
+			}
+			return resp;
+			
+		}catch (Exception e) {
+			System.err.println("** ERROR ** : "+ e.getMessage()+ " -- " +e.getCause());
+		}finally {
+			
+		    Util.closeResultSet(rsConsulta);
+	        Util.closeStatement(stmtConsulta);
+	        Util.closeJDBCConnection(conn);
+		}
+		
+		return null;
+	}
+	
+	
+	
+	
+	
     
 }

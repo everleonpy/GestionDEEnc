@@ -69,14 +69,8 @@ public class RemisionElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.idMov, x.dVerFor, x.Id,");
 			buffer.append(" x.dDVId, x.dSisFact, x.dFecFirma");
-			buffer.append(" from tmpFactuDE_A x");
-
-		    //buffer.append(" where not exists ( select 1");
-		    //buffer.append(" from RCV_TRX_EB_BATCH_ITEMS b");
-		    //buffer.append(" where upper(nvl(b.RESULT_STATUS, 'Rechazado')) = 'APROBADO'");
-		    //buffer.append(" and b.TRANSACTION_ID = h.IDENTIFIER )");
-			
-			buffer.append(" where x.fechaFactura < ?");
+			buffer.append(" from tmpFactuDE_A x, tmpFactuDE_C c");
+			buffer.append(" where c.iTiDE = 7 and c.idMov = x.idMov and x.fechaFactura < ?");
 			buffer.append(" and x.fechaFactura >= ?");
 			buffer.append(" order by x.idMov");
 			//
@@ -791,7 +785,7 @@ public class RemisionElectronicaDAO {
 			StringBuffer buffer = new StringBuffer();			
 			
 			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.dDirLocSal, x.dComp1Sal, x.dComp2Sal,");
+			buffer.append("select x.idConfig, x.dDirLocSal, dNumCasSal, x.dComp1Sal, x.dComp2Sal,");
 			buffer.append(" x.cDepSal, x.dDesDepSal, x.cDisSal, x.dDesDisSal,");
 			buffer.append(" x.cCiuSal, x.dDesCiuSal, x.dTelSal");
 			buffer.append(" from TmpFactuDE_E101 x");
@@ -804,7 +798,9 @@ public class RemisionElectronicaDAO {
 			TmpFactuDE_E101 o = new TmpFactuDE_E101();
 			if (rs.next()) {
 				dataFound = true;
+				System.out.println("****** cCiuSal "+rs.getInt("cCiuSal"));
 				o.setcCiuSal(rs.getInt("cCiuSal"));
+				System.out.println("******* cDepSal  "+rs.getShort("cDepSal"));
 				o.setcDepSal(rs.getShort("cDepSal"));
 				o.setcDisSal(rs.getShort("cDisSal"));
 				o.setdComp1Sal(rs.getString("dComp1Sal"));
@@ -812,6 +808,7 @@ public class RemisionElectronicaDAO {
 				o.setdDesCiuSal(rs.getString("dDesCiuSal"));
 				o.setdDesDepSal(rs.getString("dDesDepSal"));
 				o.setdDesDisSal(rs.getString("dDesDisSal"));
+				System.out.println("******* dDirLocSal "+rs.getString("dDirLocSal"));
 				o.setdDirLocSal(rs.getString("dDirLocSal"));
 				o.setdNumCasSal(rs.getShort("dNumCasSal"));
 				o.setdTelSal(rs.getString("dTelSal"));
@@ -866,6 +863,7 @@ public class RemisionElectronicaDAO {
 				o.setdComp2Ent(rs.getString("dComp2Ent"));
 				o.setdDesCiuEnt(rs.getString("dDesCiuEnt"));
 				o.setdDesDepEnt(rs.getString("dDesDepEnt"));
+				System.out.println("=================================  dDesDisEnt : "+rs.getString("dDesDisEnt"));
 				o.setdDesDisEnt(rs.getString("dDesDisEnt"));
 				o.setdDirLocEnt(rs.getString("dDirLocEnt"));
 				o.setdNumCasEnt(rs.getString("dNumCasEnt"));
@@ -903,7 +901,7 @@ public class RemisionElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dTiVehTras, x.dMarVeh, x.dTipIdenVeh,");
 			buffer.append(" x.dNroIDVeh, x.dAdicVeh, x.dNroMatVeh, x.dNroVuelo");
-			buffer.append(" from TmpFactuDE_E102 x");
+			buffer.append(" from TmpFactuDE_E103 x");
 			buffer.append(" where x.idMov = ?");
 			//
 			ps = conn.prepareStatement(buffer.toString());

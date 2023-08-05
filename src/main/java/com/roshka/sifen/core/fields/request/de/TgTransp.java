@@ -52,7 +52,10 @@ public class TgTransp extends SifenObjectBase {
 
         if (iTiDE.getVal() == 7 || (iTiDE.getVal() == 1 && this.dIniTras != null)) {
             gTransp.addChildElement("dIniTras").setTextContent(this.dIniTras.toString());
-            gTransp.addChildElement("dFinTras").setTextContent(this.dFinTras.toString());
+            
+            if( dFinTras != null  ) {
+            	gTransp.addChildElement("dFinTras").setTextContent(this.dFinTras.toString());
+            }
         }
 
         if (this.cPaisDest != null) {

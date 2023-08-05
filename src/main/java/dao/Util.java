@@ -24,30 +24,34 @@ import java.sql.Statement;
 public class Util {
 	//private static Logger logger = Logger.getLogger(Util.class);
 
-	public static Connection getConnection() 
+	public static Connection getConnection()  
 	{
 		//String ipAddress = "192.168.30.100";  // IP Jessy Lens
 		String ipAddress = "192.168.1.190";    // IP Agro
 		String port = "1433";
-		//String dbName = "JessyLens";
-		String dbName = "agro";
+		//String dbName = "JessyLens"; 
+		String dbName = "agro"; 
 		
 		Connection c = null;
 		
 		try {
+			
 			String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName="+dbName;
 			
 			/*String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName=JessyLens;"
-							   +"integratedSecurity=true;encrypt=false"; 
-			System.out.println("Connection string: " + connString);*/
+							   +"integratedSecurity=true;encrypt=false"; */
+			
+			System.out.println("Connection string: " + connString);
 			
 			String user = "sa";
-			String pass = "Sqlseagro12345"; //"Sqljessylens12345";
+			//String pass =  "Sqljessylens12345";   //JessyLens
+			String pass =  "Sqlseagro12345"; //Seagro
 			
 			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 			c = DriverManager.getConnection(connString, user, pass);		
 			
 			return c;
+			
 		} catch (Exception e) {
 			System.out.println( e.getClass().getName()+": "+ e.getMessage() );
 			//System.err.println( e.getClass().getName()+": "+ e.getMessage() );

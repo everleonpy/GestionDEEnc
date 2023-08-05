@@ -1,6 +1,7 @@
 package pojo;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class CamposItemsOperacion {
 	// +------------------------------------------------------------------------------------------+
@@ -93,10 +94,10 @@ public class CamposItemsOperacion {
 		this.dDesUniMed = dDesUniMed;
 	}
 	public BigDecimal getdCantProSer() {
-		return dCantProSer;
+		return dCantProSer.setScale(4, RoundingMode.UNNECESSARY);
 	}
 	public void setdCantProSer(BigDecimal dCantProSer) {
-		this.dCantProSer = dCantProSer;
+		this.dCantProSer = dCantProSer.setScale(4, RoundingMode.UNNECESSARY);
 	}
 	public String getcPaisOrig() {
 		return cPaisOrig;

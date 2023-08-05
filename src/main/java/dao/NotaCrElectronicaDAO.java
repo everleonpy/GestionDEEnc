@@ -1,4 +1,4 @@
-package business;
+package dao;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -7,38 +7,26 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import dao.Util;
 import nider.TmpFactuDE_A;
 import nider.TmpFactuDE_B;
 import nider.TmpFactuDE_C;
 import nider.TmpFactuDE_D;
+import nider.TmpFactuDE_D1;
 import nider.TmpFactuDE_D2;
 import nider.TmpFactuDE_D21;
 import nider.TmpFactuDE_D22;
 import nider.TmpFactuDE_D3;
-import nider.TmpFactuDE_E;
 import nider.TmpFactuDE_E0;
-import nider.TmpFactuDE_E1;
-import nider.TmpFactuDE_E10;
-import nider.TmpFactuDE_E101;
-import nider.TmpFactuDE_E102;
-import nider.TmpFactuDE_E103;
-import nider.TmpFactuDE_E104;
-import nider.TmpFactuDE_E6;
-import nider.TmpFactuDE_E7;
-import nider.TmpFactuDE_E71;
-import nider.TmpFactuDE_E711;
-import nider.TmpFactuDE_E712;
-import nider.TmpFactuDE_E72;
-import nider.TmpFactuDE_E721;
+import nider.TmpFactuDE_E5;
 import nider.TmpFactuDE_E8;
 import nider.TmpFactuDE_E81;
 import nider.TmpFactuDE_E811;
 import nider.TmpFactuDE_E82;
-import nider.TmpFactuDE_G1;
+import nider.TmpFactuDE_H;
+import util.DateTools;
 import util.UtilPOS;
 
-public class RemisionElectronicaDAO {
+public class NotaCrElectronicaDAO {
 	
 	public static ArrayList<TmpFactuDE_A> getDEList ( java.util.Date trxDate ) {
 		Connection conn =  null;
@@ -55,7 +43,7 @@ public class RemisionElectronicaDAO {
 		int trxCounter = 0;
 		//
 		try {
-			conn =  Util.getConnection(); //Util.getConnection(); 
+			conn = Util.getConnection();
 			if (conn == null) {
 				return null;
 			}
@@ -68,24 +56,30 @@ public class RemisionElectronicaDAO {
 			toDate = UtilPOS.addDaysToDate(fromDate, 1);
 			
 			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.idMov, x.dVerFor, x.Id,");
+			/* Original**  buffer.append("select x.idConfig, x.idMov, x.dVerFor, x.Id,");
 			buffer.append(" x.dDVId, x.dSisFact, x.dFecFirma");
 			buffer.append(" from tmpFactuDE_A x");
-
+			*/
+			buffer.append("select a.idConfig,a.idMov,a.dVerFor,a.Id,a.dDVId,a.dSisFact,a.dFecFirma ");
+			buffer.append("from tmpFactuDE_A  a inner join tmpFactuDE_C c  on a.idMov=c.idMov ");
+			buffer.append("where c.iTiDE=5 ");
+			
 		    //buffer.append(" where not exists ( select 1");
 		    //buffer.append(" from RCV_TRX_EB_BATCH_ITEMS b");
 		    //buffer.append(" where upper(nvl(b.RESULT_STATUS, 'Rechazado')) = 'APROBADO'");
 		    //buffer.append(" and b.TRANSACTION_ID = h.IDENTIFIER )");
 			
-			buffer.append(" where x.fechaFactura < ?");
-			buffer.append(" and x.fechaFactura >= ?");
-			buffer.append(" order by x.idMov");
+			buffer.append(" and a.fechaFactura >= ?");
+			buffer.append(" and a.fechaFactura <= ?");
+			buffer.append(" order by a.idMov");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			index++;
-			ps.setTimestamp(index, new Timestamp(toDate.getTime()));
+			//ps.setTimestamp(index, new Timestamp(toDate.getTime()));
+			ps.setString(index, DateTools.getString(trxDate, "yyyy-MM-dd"));
 			index++;
-			ps.setTimestamp(index, new Timestamp(fromDate.getTime()));
+			//ps.setTimestamp(index, new Timestamp(fromDate.getTime()));
+			ps.setString(index, DateTools.getString(trxDate, "yyyy-MM-dd"));
 			System.out.println("Consultando fechas desde: " + fromDate + " hasta: " + toDate);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
@@ -104,29 +98,29 @@ public class RemisionElectronicaDAO {
 				o.setIdMov(idMov);
 				// obtener la instancia de gOpeDE
 				TmpFactuDE_B b = new TmpFactuDE_B();
-				b = RemisionElectronicaDAO.getgOpeDE(idMov, conn);
+				b = NotaCrElectronicaDAO.getgOpeDE(idMov, conn);
 				o.setgOpeDe(b);
 				// obtener la instancia de gTimb
 				TmpFactuDE_C c = new TmpFactuDE_C();
-				c = RemisionElectronicaDAO.getgTimb(idMov, conn);
+				c = NotaCrElectronicaDAO.getgTimb(idMov, conn);
 				o.setgTimb(c);
 				// obtener la instancia de gDatGralOpe
 				TmpFactuDE_D g = new TmpFactuDE_D();
-				g = RemisionElectronicaDAO.getgDatGralOpe(idMov, conn);
+				g = NotaCrElectronicaDAO.getgDatGralOpe(idMov, conn); 
 				o.setgDatGralOpe(g);
 				// obtener la instancia de gDTipDE
 				TmpFactuDE_E0 td = new TmpFactuDE_E0();
-				TmpFactuDE_E6 re = RemisionElectronicaDAO.getgCamNRE(idMov, conn);
-				td.setgCamNRE(re);
+				TmpFactuDE_E5 ne = NotaCrElectronicaDAO.getgCamNCDE(idMov, conn);
+				td.setgCamNCDE(ne);
 				// obtener la lista de items de la operacion
-				ArrayList<TmpFactuDE_E8> items = RemisionElectronicaDAO.getgCamItem(idMov, conn);
-				System.out.println("Factura: " + idMov + " Items: " + items.size());
+				ArrayList<TmpFactuDE_E8> items = NotaCrElectronicaDAO.getgCamItem(idMov, conn);
+				System.out.println("Nota Credito: " + idMov + " Items: " + items.size());
 				td.setItemsList(items);
-				// obtener los datos especificos del transporte de mercaderias
-				TmpFactuDE_E10 gTransp = RemisionElectronicaDAO.getgTransp(idMov, conn);
-				td.setgTransp(gTransp);
 				//
 				o.setgTipDE(td);
+				// obtener la lista de documentos asociados a la operacion
+				ArrayList<TmpFactuDE_H> asoc = NotaCrElectronicaDAO.getgCamDEAsoc(idMov, conn);
+				o.setGcamDEAsoc(asoc);
 				//
 				deList.add(o);
 				rowsCounter++;
@@ -303,15 +297,73 @@ public class RemisionElectronicaDAO {
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
 				// cargar los elementos contenidos
+				TmpFactuDE_D1 gOpeCom = new TmpFactuDE_D1();
+				gOpeCom = NotaCrElectronicaDAO.getgOpeCom(idMov, conn);
+				o.setgOpeCom(gOpeCom);
+				//
 				TmpFactuDE_D2 gEmis = new TmpFactuDE_D2();
-				gEmis = RemisionElectronicaDAO.getgEmis(idMov, conn);
+				gEmis = NotaCrElectronicaDAO.getgEmis(idMov, conn);
 				o.setgEmis(gEmis);
 				//
 				TmpFactuDE_D3 gDatRec = new TmpFactuDE_D3();
-				gDatRec = RemisionElectronicaDAO.getgDatRec(idMov, conn);
+				gDatRec = NotaCrElectronicaDAO.getgDatRec(idMov, conn);
 				o.setgDatRec(gDatRec);
 				//
 				//System.out.println("TmpFactuDE_D: " + rs.getString("dFeEmiDE"));
+			}
+			if (dataFound == true) {
+				return o;
+			} else {
+				return null;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			Util.closeResultSet(rs);
+			Util.closeStatement(ps);
+		}	
+	}
+
+	public static TmpFactuDE_D1 getgOpeCom ( int idMov, Connection conn ) {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		boolean dataFound = false;
+		//
+		try {
+			// ejecutar la consulta de base de datos
+			StringBuffer buffer = new StringBuffer();
+
+			// datos de la cabecera de la transaccion 
+			buffer.append("select x.idConfig, x.iTipTra, x.dDesTipTra, x.iTImp,");
+			buffer.append(" x.dDesTImp, x.cMoneOpe, x.dDesMoneOpe, x.dCondTiCam,");
+			buffer.append(" x.dTiCam, x.iCondAnt, x.dDesCondAnt");
+			buffer.append(" from tmpFactuDE_D1 x");
+			buffer.append(" where x.idMov = ?");
+			//
+			ps = conn.prepareStatement(buffer.toString());
+			ps.setInt(1, idMov);
+			rs = ps.executeQuery();
+			// arreglo para almacenar la lista de documentos electronicos auxiliares
+			TmpFactuDE_D1 o = new TmpFactuDE_D1();
+			if (rs.next()) {
+				dataFound = true;
+				
+				o.setcMoneOpe(rs.getString("cMoneOpe"));
+				o.setdCondTiCam(rs.getShort("dCondTiCam"));
+				o.setdDesCondAnt(rs.getString("dDesCondAnt"));
+				o.setdDesMoneOpe(rs.getString("dDesMoneOpe"));
+				o.setdDesTImp(rs.getString("dDesTImp"));
+				o.setdDesTipTra(rs.getString("dDesTipTra"));
+				o.setdTiCam(new BigDecimal(rs.getDouble("dTiCam")));
+				o.setdDesCondAnt(rs.getString("dDesCondAnt"));
+				o.setIdConfig(rs.getInt("idConfig"));
+				o.setIdMov(idMov);
+				o.setiTImp(rs.getShort("iTImp"));
+				o.setiTipTra(rs.getShort("iTipTra"));
+				//
+				//System.out.println("TmpFactuDE_D1: " + rs.getString("iTipTra"));
 			}
 			if (dataFound == true) {
 				return o;
@@ -375,10 +427,10 @@ public class RemisionElectronicaDAO {
 				o.setiTipCont(rs.getShort("iTipCont"));				
 				// cargar los elementos contenidos por este elemento
 				ArrayList<TmpFactuDE_D21> actList = new ArrayList<TmpFactuDE_D21>();
-				actList = RemisionElectronicaDAO.getgActEco(idMov, conn);
+				actList = NotaCrElectronicaDAO.getgActEco(idMov, conn);
 				o.setEconActivList(actList);
 				TmpFactuDE_D22 rsp = new TmpFactuDE_D22();
-				rsp = RemisionElectronicaDAO.getgRespDE(idMov, conn);
+				rsp = NotaCrElectronicaDAO.getgRespDE(idMov, conn);
 				o.setgRespDE(rsp);
 				//
 				//System.out.println("TmpFactuDE_D2: " + rs.getString("dNomEmi"));
@@ -564,7 +616,7 @@ public class RemisionElectronicaDAO {
 		}	
 	}
 
-	public static TmpFactuDE_E6 getgCamNRE ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E5 getgCamNCDE ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -572,30 +624,25 @@ public class RemisionElectronicaDAO {
 		try {
 			// ejecutar la consulta de base de datos
 			StringBuffer buffer = new StringBuffer();
-			
+
 			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.iMotEmiNR, x.dDesMotEmiNR, x.iRespEmiNR,");
-			buffer.append(" x.dDesRespEmiNR, x.dKmR, x.dFecEm");
-			buffer.append(" from tmpFactuDE_E6 x");
+			buffer.append("select x.idConfig, x.iMotEmi, x.dDesMotEmi");
+			buffer.append(" from tmpFactuDE_E5 x");
 			buffer.append(" where x.idMov = ?");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			TmpFactuDE_E6 o = new TmpFactuDE_E6();
+			TmpFactuDE_E5 o = new TmpFactuDE_E5();
 			if (rs.next()) {
 				dataFound = true;
-				o.setdDesMotEmiNR(rs.getString("dDesMotEmiNR"));
-				o.setdDesRespEmiNR(rs.getString("dDesRespEmiNR"));
-				o.setdFecEm(rs.getString("dFecEm"));
-				o.setdKmR(rs.getInt("dKmR"));
+				o.setdDesMotEmi(rs.getString("dDesMotEmi"));
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
-				o.setiMotEmiNR(rs.getShort("iMotEmiNR"));
-				o.setiRespEmiNR(rs.getShort("iRespEmiNR"));				
+				o.setiMotEmi(rs.getShort("iMotEmi"));
 				//
-				//System.out.println("TmpFactuDE_E6: " + rs.getString("dDesMotEmiNR"));
+				//System.out.println("TmpFactuDE_E: " + rs.getString("dDesMotEmi"));
 			}
 			if (dataFound == true) {
 				return o;
@@ -611,7 +658,7 @@ public class RemisionElectronicaDAO {
 			Util.closeStatement(ps);
 		}	
 	}
-	
+		
 	public static ArrayList<TmpFactuDE_E8> getgCamItem ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -659,6 +706,12 @@ public class RemisionElectronicaDAO {
 				o.setdPorQuiMer(new BigDecimal(rs.getDouble("dPorQuiMer")));
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
+				// obtener el elemento correspondiente a los valores del item
+				TmpFactuDE_E81 valItem = NotaCrElectronicaDAO.getgValorItem(idMov, conn);
+				o.setgValorItem(valItem);
+				// obtener el elemento correspondiente al IVA del item
+				TmpFactuDE_E82 camIVA = NotaCrElectronicaDAO.getgCamIVA(idMov, conn);
+				o.setgCamIVA(camIVA);
 				//
 				lst.add(o);
 				//
@@ -705,6 +758,9 @@ public class RemisionElectronicaDAO {
 				o.setdTotBruOpeItem(new BigDecimal(rs.getDouble("dTotBruOpeItem")));
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
+				// obtener el elemento gValorRestaItem
+				TmpFactuDE_E811 r = NotaCrElectronicaDAO.getgValorRestaItem(idMov, conn);
+				o.setgValorRestaItem(r);
 				//System.out.println("TmpFactuDE_E81: " + rs.getDouble("dPUniProSer"));				
 			}
 			if (dataFound == true) {
@@ -722,291 +778,7 @@ public class RemisionElectronicaDAO {
 		}	
 	}
 	
-	public static TmpFactuDE_E10 getgTransp ( int idMov, Connection conn ) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		boolean dataFound = false;
-		//
-		try {
-			// ejecutar la consulta de base de datos
-			StringBuffer buffer = new StringBuffer();			
-			
-			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.iTipTrans, x.dDesTipTrans, x.iModTrans,");
-			buffer.append(" x.dDesModTrans, x.iRespFlete, x.cCondNeg, x.dNuManif,");
-			buffer.append(" x.dNuDespImp, x.dIniTras, x.dFinTras, x.cPaisDest,");
-			buffer.append(" x.dDesPaisDest");
-			buffer.append(" from TmpFactuDE_E10 x");
-			buffer.append(" where x.idMov = ?");
-			//
-			ps = conn.prepareStatement(buffer.toString());
-			ps.setInt(1, idMov);
-			rs = ps.executeQuery();
-			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			TmpFactuDE_E10 o = new TmpFactuDE_E10();
-			if (rs.next()) {
-				dataFound = true;
-				o.setcCondNeg(rs.getString("cCondNeg"));
-				o.setcPaisDest(rs.getString("cPaisDest"));
-				o.setdDesModTrans(rs.getString("dDesModTrans"));
-				o.setdDesPaisDest(rs.getString("dDesPaisDest"));
-				o.setdDesTipTrans(rs.getString("dDesTipTrans"));
-				o.setdFinTras(rs.getString("dFinTras"));
-				o.setdIniTras(rs.getString("dIniTras"));
-				o.setdNuDespImp(rs.getString("dNuDespImp"));
-				o.setdNuManif(rs.getString("dNuManif"));
-				o.setIdConfig(rs.getInt("idConfig"));
-				o.setIdMov(idMov);
-				o.setiModTrans(rs.getShort("iModTrans"));
-				o.setiRespFlete(rs.getShort("iRespFlete"));
-				o.setiTipTrans(rs.getShort("iTipTrans"));				
-				//
-				//System.out.println("TmpFactuDE_E10: " + rs.getString("dDesModTrans") + " - " + rs.getString("dDesTipTrans"));	
-				o.setgCamSal(RemisionElectronicaDAO.getgCamSal(idMov, conn));
-				o.setgCamEnt(RemisionElectronicaDAO.getgCamEnt(idMov, conn));
-				o.setgVehTras(RemisionElectronicaDAO.getgVehTras(idMov, conn));
-				o.setgCamTrans(RemisionElectronicaDAO.getgCamTrans(idMov, conn));
-			}
-			if (dataFound == true) {
-				return o;
-			} else {
-				return null;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			Util.closeResultSet(rs);
-			Util.closeStatement(ps);
-		}	
-	}
-	
-	public static TmpFactuDE_E101 getgCamSal ( int idMov, Connection conn ) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		boolean dataFound = false;
-		//
-		try {
-			// ejecutar la consulta de base de datos
-			StringBuffer buffer = new StringBuffer();			
-			
-			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.dDirLocSal, x.dComp1Sal, x.dComp2Sal,");
-			buffer.append(" x.cDepSal, x.dDesDepSal, x.cDisSal, x.dDesDisSal,");
-			buffer.append(" x.cCiuSal, x.dDesCiuSal, x.dTelSal, x.dNumCasSal ");
-			buffer.append(" from TmpFactuDE_E101 x");
-			buffer.append(" where x.idMov = ?");
-			//
-			ps = conn.prepareStatement(buffer.toString());
-			ps.setInt(1, idMov);
-			rs = ps.executeQuery();
-			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			TmpFactuDE_E101 o = new TmpFactuDE_E101();
-			if (rs.next()) {
-				dataFound = true;
-				o.setcCiuSal(rs.getInt("cCiuSal"));
-				o.setcDepSal(rs.getShort("cDepSal"));
-				o.setcDisSal(rs.getShort("cDisSal"));
-				o.setdComp1Sal(rs.getString("dComp1Sal"));
-				o.setdComp2Sal(rs.getString("dComp2Sal"));
-				o.setdDesCiuSal(rs.getString("dDesCiuSal"));
-				o.setdDesDepSal(rs.getString("dDesDepSal"));
-				o.setdDesDisSal(rs.getString("dDesDisSal"));
-				o.setdDirLocSal(rs.getString("dDirLocSal"));
-				o.setdNumCasSal(rs.getShort("dNumCasSal"));
-				o.setdTelSal(rs.getString("dTelSal"));
-				o.setIdConfig(rs.getInt("idConfig"));
-				o.setIdMov(idMov);
-				//
-				//System.out.println("TmpFactuDE_E101: " + rs.getString("dDirLocSal"));				
-			}
-			if (dataFound == true) {
-				return o;
-			} else {
-				return null;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			Util.closeResultSet(rs);
-			Util.closeStatement(ps);
-		}	
-	}
-
-	public static ArrayList<TmpFactuDE_E102> getgCamEnt ( int idMov, Connection conn ) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		boolean dataFound = false;
-		//
-		try {
-			// ejecutar la consulta de base de datos
-			StringBuffer buffer = new StringBuffer();			
-			
-			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.dDirLocEnt, x.dNumCasEnt, x.dComp1Ent,");
-			buffer.append(" x.dComp2Ent, x.cDepEnt, x.dDesDepEnt, x.cDisEnt,");
-			buffer.append(" x.dDesDisEnt, x.cCiuEnt, x.dDesCiuEnt, x.dTelEnt");
-			buffer.append(" from TmpFactuDE_E102 x");
-			buffer.append(" where x.idMov = ?");
-			//
-			ps = conn.prepareStatement(buffer.toString());
-			ps.setInt(1, idMov);
-			rs = ps.executeQuery();
-			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			ArrayList<TmpFactuDE_E102> l = new ArrayList<TmpFactuDE_E102>();
-			while (rs.next()) {
-				dataFound = true;
-				TmpFactuDE_E102 o = new TmpFactuDE_E102();
-				o.setcCiuEnt(rs.getInt("cCiuEnt"));
-				o.setcDepEnt(rs.getShort("cDepEnt"));
-				o.setcDisEnt(rs.getShort("cDisEnt"));
-				o.setdComp1Ent(rs.getString("dComp1Ent"));
-				o.setdComp2Ent(rs.getString("dComp2Ent"));
-				o.setdDesCiuEnt(rs.getString("dDesCiuEnt"));
-				o.setdDesDepEnt(rs.getString("dDesDepEnt"));
-				System.out.println("=================================  dDesDisEnt : "+rs.getString("dDesDisEnt"));
-				o.setdDesDisEnt(rs.getString("dDesDisEnt"));
-				o.setdDirLocEnt(rs.getString("dDirLocEnt"));
-				o.setdNumCasEnt(rs.getString("dNumCasEnt"));
-				o.setdTelEnt(rs.getString("dTelEnt"));
-				o.setIdConfig(rs.getInt("idConfig"));
-				o.setIdMov(idMov);
-				l.add(o);
-				//
-				//System.out.println("TmpFactuDE_E102: " + rs.getString("dDirLocEnt"));				
-			}
-			if (dataFound == true) {
-				return l;
-			} else {
-				return null;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			Util.closeResultSet(rs);
-			Util.closeStatement(ps);
-		}	
-	}
-
-	public static ArrayList<TmpFactuDE_E103> getgVehTras ( int idMov, Connection conn ) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		boolean dataFound = false;
-		//
-		try {
-			// ejecutar la consulta de base de datos
-			StringBuffer buffer = new StringBuffer();			
-	
-			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.dTiVehTras, x.dMarVeh, x.dTipIdenVeh,");
-			buffer.append(" x.dNroIDVeh, x.dAdicVeh, x.dNroMatVeh, x.dNroVuelo");
-			buffer.append(" from TmpFactuDE_E102 x");
-			buffer.append(" where x.idMov = ?");
-			//
-			ps = conn.prepareStatement(buffer.toString());
-			ps.setInt(1, idMov);
-			rs = ps.executeQuery();
-			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			ArrayList<TmpFactuDE_E103> l = new ArrayList<TmpFactuDE_E103>();
-			while (rs.next()) {
-				dataFound = true;
-				TmpFactuDE_E103 o = new TmpFactuDE_E103();
-				o.setdAdicVeh(rs.getString("dAdicVeh"));
-				o.setdMarVeh(rs.getString("dMarVeh"));
-				o.setdNroIDVeh(rs.getString("dNroIDVeh"));
-				o.setdNroVuelo(rs.getString("dNroVuelo"));
-				o.setdTipIdenVeh(rs.getShort("dTipIdenVeh"));
-				o.setdTiVehTras(rs.getString("dTiVehTras"));
-				o.setdNroMatVeh(rs.getString("dNroMatVeh"));
-				o.setIdConfig(rs.getInt("idConfig"));
-				o.setIdMov(idMov);
-				l.add(o);
-				//
-				//System.out.println("TmpFactuDE_E103: " + rs.getString("dTiVehTras"));				
-			}
-			if (dataFound == true) {
-				return l;
-			} else {
-				return null;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			Util.closeResultSet(rs);
-			Util.closeStatement(ps);
-		}	
-	}
-
-	public static TmpFactuDE_E104 getgCamTrans ( int idMov, Connection conn ) {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		boolean dataFound = false;
-		//
-		try {
-			// ejecutar la consulta de base de datos
-			StringBuffer buffer = new StringBuffer();			
-	
-			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.iNatTrans, x.dNomTrans, x.dRucTrans,");
-			buffer.append(" x.dDVTrans, x.iTipIDTrans, x.dDTipIDTrans, x.dNumIDTrans,");
-			buffer.append(" x.cNacTrans, x.dDesNacTrans, x.dNumIDChof, x.dNomChof,");
-			buffer.append(" x.dDomFisc, x.dDirChof, x.dNombAg, x.dRucAg,");
-			buffer.append(" x.dDVAg, x.dDirAge");
-			buffer.append(" from TmpFactuDE_E104 x");
-			buffer.append(" where x.idMov = ?");
-			//
-			ps = conn.prepareStatement(buffer.toString());
-			ps.setInt(1, idMov);
-			rs = ps.executeQuery();
-			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			TmpFactuDE_E104 o = new TmpFactuDE_E104();
-			if (rs.next()) {
-				dataFound = true;
-				o.setcNacTrans(rs.getString("cNacTrans"));
-				o.setdDesNacTrans(rs.getString("dDesNacTrans"));
-				o.setdDirAge(rs.getString("dDirAge"));
-				o.setdDirChof(rs.getString("dDirChof"));
-				o.setdDomFisc(rs.getString("dDomFisc"));
-				o.setdDTipIDTrans(rs.getString("dDTipIDTrans"));
-				o.setdDVAg(rs.getShort("dDVAg"));
-				o.setdDVTrans(rs.getShort("dDVTrans"));
-				o.setdNombAg(rs.getString("dNombAg"));
-				o.setdNomChof(rs.getString("dNomChof"));
-				o.setdNomTrans(rs.getString("dNomTrans"));
-				o.setdNumIDChof(rs.getString("dNumIDChof"));
-				o.setdNumIDTrans(rs.getString("dNumIDTrans"));
-				o.setdRucAg(rs.getString("dRucAg"));
-				o.setdRucTrans(rs.getString("dRucTrans"));
-				o.setiNatTrans(rs.getShort("iNatTrans"));
-				o.setiTipIDTrans(rs.getShort("iTipIDTrans"));
-				o.setIdConfig(rs.getInt("idConfig"));
-				o.setIdMov(idMov);
-				//
-				//System.out.println("TmpFactuDE_E103: " + rs.getString("dTiVehTras"));				
-			}
-			if (dataFound == true) {
-				return o;
-			} else {
-				return null;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		} finally {
-			Util.closeResultSet(rs);
-			Util.closeStatement(ps);
-		}	
-	}
-
-	public static TmpFactuDE_G1 getgCamCarg ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E82 getgCamIVA ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -1014,33 +786,83 @@ public class RemisionElectronicaDAO {
 		try {
 			// ejecutar la consulta de base de datos
 			StringBuffer buffer = new StringBuffer();
-		
+
 			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.cUniMedTotVol, x.dDesUniMedTotVol, x.dTotVolMerc,");
-			buffer.append(" x.cUniMedTotPes, x.dDesUniMedTotPes, x.dTotPesMerc, x.iCarCarga,");
-			buffer.append(" x.dDesCarCarga");
-			buffer.append(" from TmpFactuDE_G1 x");
+			buffer.append("select x.idConfig, x.dBasGravIVA, x.dDesAfecIVA, x.dLiqIVAItem,");
+			buffer.append(" x.dPropIVA, x.dTasaIVA, x.iAfecIVA");
+			buffer.append(" from tmpFactuDE_E82 x");
 			buffer.append(" where x.idMov = ?");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
-			TmpFactuDE_G1 o = new TmpFactuDE_G1();
+			TmpFactuDE_E82 o = new TmpFactuDE_E82();
 			if (rs.next()) {
 				dataFound = true;
-				o.setcUniMedTotPes(rs.getInt("cUniMedTotPes"));
-				o.setcUniMedTotVol(rs.getInt("cUniMedTotVol"));
-				o.setdDesCarCarga(rs.getString("dDesCarCarga"));
-				o.setdDesUniMedTotPes(rs.getString("dDesUniMedTotPes"));
-				o.setdDesUniMedTotVol(rs.getString("dDesUniMedTotVol"));
-				o.setdTotPesMerc(rs.getDouble("dTotPesMerc"));
-				o.setdTotVolMerc(rs.getDouble("dTotVolMerc"));
-				o.setiCarCarga(rs.getShort("iCarCarga"));
+				System.out.println("new: " + new BigDecimal(rs.getDouble("dBasGravIVA")));
+				System.out.println("valueOf: " + BigDecimal.valueOf(rs.getDouble("dBasGravIVA")));
+				o.setdBasGravIVA(new BigDecimal(rs.getDouble("dBasGravIVA")));
+				o.setdDesAfecIVA(rs.getString("dDesAfecIVA"));
+				o.setdLiqIVAItem(new BigDecimal(rs.getDouble("dLiqIVAItem")));
+				System.out.println("propiva new: " + new BigDecimal(rs.getDouble("dPropIVA")));
+				System.out.println("propiva valueOf: " + BigDecimal.valueOf(rs.getDouble("dPropIVA")));
+				o.setdPropIVA(new BigDecimal(rs.getDouble("dPropIVA")));
+				o.setdTasaIVA(rs.getShort("dTasaIVA"));
+				o.setiAfecIVA(rs.getShort("iAfecIVA"));
 				o.setIdConfig(rs.getInt("idConfig"));
-				o.setIdMov(idMov);				
+				o.setIdMov(idMov);
 				//
-				//System.out.println("TmpFactuDE_G1: " + rs.getString("dDesCarCarga"));
+				//System.out.println("TmpFactuDE_E82: " + rs.getShort("iAfecIVA"));				
+			}
+			if (dataFound == true) {
+				return o;
+			} else {
+				return null;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			Util.closeResultSet(rs);
+			Util.closeStatement(ps);
+		}	
+	}
+
+	public static TmpFactuDE_E811 getgValorRestaItem ( int idMov, Connection conn ) {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		boolean dataFound = false;
+		//
+		try {
+			// ejecutar la consulta de base de datos
+			StringBuffer buffer = new StringBuffer();
+
+			// datos de la cabecera de la transaccion 
+			buffer.append("select x.idConfig, x.dAntGloPreUniIt, x.dAntPreUniIt, x.dDescGloItem,");
+			buffer.append(" x.dDescItem, x.dPorcDesIt, x.dTotOpeGs, x.dTotOpeItem");
+			buffer.append(" from tmpFactuDE_E811 x");
+			buffer.append(" where x.idMov = ?");
+			//
+			ps = conn.prepareStatement(buffer.toString());
+			ps.setInt(1, idMov);
+			rs = ps.executeQuery();
+			// arreglo para almacenar la lista de documentos electronicos auxiliares
+			TmpFactuDE_E811 o = new TmpFactuDE_E811();
+			if (rs.next()) {
+				dataFound = true;
+				o.setdAntGloPreUniIt(new BigDecimal(rs.getDouble("dAntGloPreUniIt")));
+				o.setdAntPreUniIt(new BigDecimal(rs.getDouble("dAntPreUniIt")));
+				o.setdDescGloItem(new BigDecimal(rs.getDouble("dDescGloItem")));
+				o.setdDescItem(new BigDecimal(rs.getDouble("dDescItem")));
+				o.setdPorcDesIt(new BigDecimal(rs.getDouble("dPorcDesIt")));
+				o.setdTotOpeGs(new BigDecimal(rs.getDouble("dTotOpeGs")));
+				o.setdTotOpeItem(new BigDecimal(rs.getDouble("dTotOpeItem")));
+				o.setIdConfig(rs.getInt("idConfig"));
+				o.setIdMov(idMov);
+				//
+				System.out.println("TmpFactuDE_E811: " + rs.getDouble("dDescItem"));				
 			}
 			if (dataFound == true) {
 				return o;
@@ -1057,4 +879,67 @@ public class RemisionElectronicaDAO {
 		}	
 	}
 	
+	public static ArrayList<TmpFactuDE_H> getgCamDEAsoc ( int idMov, Connection conn ) {
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		boolean dataFound = false;
+		//
+		try {
+			// ejecutar la consulta de base de datos
+			StringBuffer buffer = new StringBuffer();
+
+			// datos de la cabecera de la transaccion 
+			buffer.append("select x.idConfig, x.iTipDocAso, x.dDesTipDocAso, x.dCdCDERef,");
+			buffer.append(" x.dNTimDI, x.dEstDocAso, x.dPExpDocAso, x.dNumDocAso,");
+			buffer.append(" x.iTipoDocAso, x.dDTipoDocAso, x.dFecEmiDI, x.dNumComRet,");
+			buffer.append(" x.dNumResCF, x.iTipCons, x.dDesTipCons, x.dNumCons,");
+			buffer.append(" x.dNumControl");
+			buffer.append(" from tmpFactuDE_H x");
+			buffer.append(" where x.idMov = ?");
+			//
+			ps = conn.prepareStatement(buffer.toString());
+			ps.setInt(1, idMov);
+			rs = ps.executeQuery();
+			// arreglo para almacenar la lista de documentos electronicos auxiliares
+			ArrayList<TmpFactuDE_H> l = new ArrayList<TmpFactuDE_H>();
+			if (rs.next()) {
+				dataFound = true;
+				TmpFactuDE_H o = new TmpFactuDE_H();				
+				o.setdCdCDERef(rs.getString("dCdCDERef"));
+				o.setdDesTipCons(rs.getString("dDesTipCons"));
+				o.setdDesTipDocAso(rs.getString("dDesTipDocAso"));
+				o.setdDTipoDocAso(rs.getString("dDTipoDocAso"));
+				o.setdEstDocAso(rs.getString("dEstDocAso"));
+				o.setdFecEmiDI(rs.getString("dFecEmiDI"));
+				o.setdNTimDI(rs.getString("dNTimDI"));
+				o.setdNumComRet(rs.getString("dNumComRet"));
+				o.setdNumCons(rs.getShort("dNumCons"));
+				o.setdNumControl(rs.getString("dNumControl"));
+				o.setdNumDocAso(rs.getString("dNumDocAso"));
+				o.setdNumResCF(rs.getString("dNumResCF"));
+				o.setdPExpDocAso(rs.getString("dPExpDocAso"));
+				o.setiTipCons(rs.getShort("iTipCons"));
+				o.setiTipDocAso(rs.getShort("iTipDocAso"));
+				o.setiTipoDocAso(rs.getShort("iTipoDocAso"));
+				o.setIdConfig(rs.getInt("idConfig"));
+				o.setIdMov(idMov);
+				//
+				l.add(o);
+				//System.out.println("TmpFactuDE_B: " + rs.getString("dNumDocAso"));
+			}
+			if (dataFound == true) {
+				return l;
+			} else {
+				return null;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			Util.closeResultSet(rs);
+			Util.closeStatement(ps);
+		}	
+	}
+
 }

@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 
+import org.apache.commons.math3.util.Precision;
+
 import pojo.CamposCuotas;
 
 public class CuotasFacturasDAO {
@@ -39,7 +41,10 @@ public class CuotasFacturasDAO {
 	        	    CamposCuotas o = new CamposCuotas();
 	        	    o.setcMoneCuo(rs.getString("CMONECUO"));
 	        	    o.setdDMoneCuo(rs.getString("DDMONECUO"));
-	        	    o.setdMonCuota(rs.getDouble("DMONCUOTA"));	
+	        	    o.setdMonCuota( Precision.round(rs.getDouble("DMONCUOTA"),4) );	
+	        	    
+	        	    System.out.println("CUOTA ----------------------> "+o.getcMoneCuo());
+	        	    
 	            d = sdf.parse(rs.getString("DVENCUO"));
 	            o.setdVencCuo(d);
                 //

@@ -14,6 +14,7 @@ import org.w3c.dom.Node;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class TgCamItem extends SifenObjectBase {
     private String dCodInt;
@@ -250,7 +251,7 @@ public class TgCamItem extends SifenObjectBase {
     }
 
     public BigDecimal getdCantProSer() {
-        return dCantProSer;
+        return dCantProSer.setScale(4, RoundingMode.HALF_EVEN);
     }
 
     public void setdCantProSer(BigDecimal dCantProSer) {

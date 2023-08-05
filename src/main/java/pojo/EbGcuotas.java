@@ -2,6 +2,8 @@ package pojo;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.util.Precision;
+
 public class EbGcuotas implements Serializable {
     /**
 	 * POJO que representa una fila de la tabla EB_GCUOTAS
@@ -49,10 +51,10 @@ public class EbGcuotas implements Serializable {
     }
 
     public double getDmoncuota() {
-        return this.dmoncuota;
+        return Precision.round(this.dmoncuota,4);
     }
     public void setDmoncuota ( double dmoncuota ) {
-        this.dmoncuota = dmoncuota;
+        this.dmoncuota = Precision.round(dmoncuota,4);
     }
 
     public java.util.Date getDvenccuo() {

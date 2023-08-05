@@ -10,7 +10,10 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.FocusManager;
@@ -27,6 +30,11 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.table.TableColumn;
 
+import com.roshka.sifen.Sifen;
+import com.roshka.sifen.core.SifenConfig;
+import com.roshka.sifen.core.beans.response.RespuestaConsultaDE;
+import com.roshka.sifen.core.exceptions.SifenException;
+
 import business.AppConfig;
 import business.ApplicationMessage;
 import business.RcvTrxEbBatchesTM;
@@ -35,10 +43,14 @@ import business.UserAttributes;
 import business.ViewRcvTrxBatchItemsCtrl;
 import business.ViewRcvTrxBatchesCtrl;
 import dao.ProblemaDatosException;
+import dao.RcvTrxEbBatchItemsDAO;
+import dto.RcvTrxEbBatchItemDTO;
 import pojo.ListOfValuesParameters;
 import pojo.ListOfValuesSelection;
 
-public class ViewRcvTrxBatches extends JFrame {
+public class ViewRcvTrxBatches extends JFrame 
+{
+	
 	private static final long serialVersionUID = 1L;
 	private JPanel jContentPane = null;
 	private JPanel jpToolbar = null;
@@ -134,7 +146,7 @@ public class ViewRcvTrxBatches extends JFrame {
 			ApplicationMessage aMsg = ctrl.initForm();
 			if (aMsg == null) {
 				showContextInfo();
-		        jtBatchNumber.requestFocusInWindow();
+		        //jtBatchNumber.requestFocusInWindow();
 			} else {
 				endProgram ();
 			}
@@ -144,10 +156,10 @@ public class ViewRcvTrxBatches extends JFrame {
 	}
 
 	/**
-	 * This method initializes this
-	 * 
-	 * @return void
-	 */
+	* This method initializes this
+	* 
+	* @return void
+	*/
 	private void initialize() {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		//System.out.println("Resolucion: " + screenSize.width + " x " + screenSize.height);
@@ -297,7 +309,8 @@ public class ViewRcvTrxBatches extends JFrame {
 			jlAction1.setFont(appLook.getSmallFont());
 			jlAction1.setOpaque(true);
 			jlAction1.setHorizontalAlignment(SwingConstants.LEFT);
-			jlAction1.addMouseListener(new MouseAdapter() {  
+			jlAction1.addMouseListener(new MouseAdapter() { 
+				
 			    public void mouseClicked(MouseEvent e) {  
 		    	        String batchNumber = "";
 		    	        long batchId = 0;
@@ -306,7 +319,62 @@ public class ViewRcvTrxBatches extends JFrame {
 				        rowIndex = jaDocBatches.getSelectedRow();
 				        System.out.println("rowIndex: " + rowIndex);
 			        }
-		            if (rowIndex > -1) {
+		            
+
+			        //TODO Ejecutamos el proceso
+			        System.out.println("EJECUTAMOS EL PROCESO......");
+			        if(jtFromDate.getText().length() > 0 ) 
+			        {
+				        RcvTrxEbBatchItemsDAO dao = new RcvTrxEbBatchItemsDAO(); 
+				        Date dte=null;
+					        
+							try {
+								dte = new SimpleDateFormat("dd/MM/yyyy").parse( jtFromDate.getText() );
+							} catch (ParseException e1) {e1.printStackTrace();					} 
+					        
+					        if( dte != null ) 
+					        {
+
+					        	List<RcvTrxEbBatchItemDTO> resp = dao.getCDC(dte);
+					        	 
+					        	 if( resp.size() > 0 ) 
+					        	 {
+					        		 try {
+					        			 
+							        	 SifenConfig sifenConfig = SifenConfig.cargarConfiguracion("test.properties");
+							    		 Sifen.setSifenConfig(sifenConfig);
+							    		 jlToDate.setVisible(true);
+							    		 jlToDate.setText("Items : "+resp.size());
+							    		 jlToDate.repaint();
+							    		 
+							        	} catch (Exception e2) { 
+							        		e2.printStackTrace();
+							        	}
+					        		 
+					        		 int totalProc = 0;
+						        	 for (RcvTrxEbBatchItemDTO it : resp) {
+										System.out.println("CDC : "+it.getCdc());
+											try {
+												
+												RespuestaConsultaDE ret = Sifen.consultaDE(it.getCdc());
+												System.out.println("COD RESPUESTA : "+ret.getCodigoEstado());
+												System.out.println("RESPUESTA     : "+ret.getdMsgRes());
+												
+												totalProc++;
+												jlToDate.setText("Items : "+resp.size()+" / "+totalProc);
+									    		jlToDate.repaint();
+												
+											} catch (SifenException e1) { e1.printStackTrace();
+											}
+									}
+					        	 }else 
+					        	 {
+					        		 //TODO Mensaje de No hay registros....
+					        	 }
+					        }
+			        }
+			        
+			        /*if (rowIndex > -1) {
 		            	    batchNumber = (String) jaDocBatches.getValueAt(rowIndex, 0);
 		            	    batchId = (long) jaDocBatches.getValueAt(rowIndex, 8);
 		            	    System.out.println("batchNumber: " + batchNumber);
@@ -314,8 +382,10 @@ public class ViewRcvTrxBatches extends JFrame {
 		            } else {
 			            ErrorMessageWindow x = new ErrorMessageWindow(null, "Debe elegir el numero de lote cuyos detalles desea consultar");
 			            x.setVisible(true);			    	        	
-		            }
+		            }*/
+			        
 		        }  
+			    
 				public void mouseEntered (MouseEvent evt) {
 					jlAction1.setBackground(appLook.getSelMenuBg());
 					jlAction1.setForeground(appLook.getSelMenuFg());
@@ -327,8 +397,9 @@ public class ViewRcvTrxBatches extends JFrame {
 					jlAction1.repaint();
 				}
 			});
-			//
-			jlAction2 = new JLabel();
+			
+			// Item Importar TOOL BAR
+			/*jlAction2 = new JLabel();
 			jlAction2.setSize(new Dimension(tbtnWidth, tbtnHeight));
 			xPos = xPos + tbtnWidth;
 			jlAction2.setLocation(new Point(xPos, 1));
@@ -388,6 +459,7 @@ public class ViewRcvTrxBatches extends JFrame {
 					jlAction2.repaint();
 				}
 			});
+			*/
 			//
 			jlAction3 = new JLabel();
 			jlAction3.setSize(new Dimension(tbtnWidth, tbtnHeight));
@@ -416,7 +488,7 @@ public class ViewRcvTrxBatches extends JFrame {
 			});
 			//
 			jpToolbar.add(jlAction1, null);
-			jpToolbar.add(jlAction2, null);
+			//jpToolbar.add(jlAction2, null);
 			jpToolbar.add(jlAction3, null);
 		}
 		return jpToolbar;
@@ -458,8 +530,8 @@ public class ViewRcvTrxBatches extends JFrame {
 			lbX = startX;
 			lbY = startY;
 			// primera linea
-			jlBatchNumber = getFiltersLabel("Numero de Lote");
-			jpFilters.add(jlBatchNumber, null);
+			//jlBatchNumber = getFiltersLabel("Total Items: 00000 - Proc : 00000") ;
+			//jpFilters.add(jlBatchNumber, null);
 			// segunda linea
 			lineNum++;
 			lbY = lbY + lbH;
@@ -468,11 +540,15 @@ public class ViewRcvTrxBatches extends JFrame {
 			// tercera linea
 			lineNum++;
 			lbY = lbY + lbH;
-			jlFromDate = getFiltersLabel("Fecha Desde");
+			jlFromDate = getFiltersLabel("Fecha : ");
 			jpFilters.add(jlFromDate, null);
 			lbX = startX + lbW + tfW;
-			jlToDate = getFiltersLabel("Fecha Hasta");
+			//TODO Monitor del proceso del Proceso
+			jlToDate = getFiltersLabel("Items : 0000 / 0000");
 			jpFilters.add(jlToDate, null);
+			jlToDate.setVisible(false);
+				
+			
 			/**
 			 +----------------------------------------------------+
 			 | region text fields placement                       |
@@ -483,7 +559,7 @@ public class ViewRcvTrxBatches extends JFrame {
 			tfY = startY;
 			lineNum = 0;
 			// primera linea
-			jpFilters.add(getjtBatchNumber(), null);
+			//jpFilters.add(getjtBatchNumber(), null);
 			// segunda linea
 			tfY = tfY + tfH;
 			tfW = tfWidth * 2;
@@ -496,8 +572,8 @@ public class ViewRcvTrxBatches extends JFrame {
 			//
 			tfW = tfWidth;
 			// tener en cuenta aqui que el valor de lbW puede no ser conocido
-			tfX = tfX + tfW + lbW;
-			jpFilters.add(getjtToDate(), null);
+			//tfX = tfX + tfW + lbW;
+			//jpFilters.add(getjtToDate(), null);
 			
 		}
 		return jpFilters;
@@ -542,7 +618,7 @@ public class ViewRcvTrxBatches extends JFrame {
 		if (cbTrxType == null) {
 			cbTrxType = getFiltersComboBox();
 			cbTrxType.addItem("Factura");
-			cbTrxType.addItem("Nota de Credito");
+			//cbTrxType.addItem("Nota de Credito");
 			cbTrxType.addKeyListener(new java.awt.event.KeyAdapter() {
 				public void keyPressed(java.awt.event.KeyEvent e) {
 					//System.out.println("********" + e.isActionKey() + " - " + e.getKeyCode() + " - " + e.isAltDown() + " - " + e.isControlDown());
@@ -572,7 +648,7 @@ public class ViewRcvTrxBatches extends JFrame {
 						    jtFromDate.setText("");							
 						}
 						jtFromDate.repaint();
-						jtToDate.requestFocusInWindow();
+						//jtToDate.requestFocusInWindow();
 					} else {
 				        ErrorMessageWindow x = new ErrorMessageWindow(null, aMsg.getText());
 				        x.setVisible(true);
@@ -888,16 +964,17 @@ public class ViewRcvTrxBatches extends JFrame {
 	
 	public ImageIcon getScaledIcon (String iconName, int width, int height) {
 		//ImageIcon icon = new ImageIcon(iconName);
-		ImageIcon icon = new ImageIcon(getClass().getResource(iconName));
+		ImageIcon icon = new ImageIcon(getClass().getResource("/"+iconName));
 		Image img = icon.getImage();  
 		Image newimg = img.getScaledInstance(width, height,  java.awt.Image.SCALE_SMOOTH);  
 		ImageIcon newIcon = new ImageIcon(newimg);
 		return newIcon;
 	}	   
     
-    private void endProgram () {
+    private void endProgram () 
+    {
 		this.dispose();
-		new ReceivablesMenu ();
+		new EDocsMenu ();
 	}
 
 	/**
@@ -914,8 +991,9 @@ public class ViewRcvTrxBatches extends JFrame {
     	    // la tecla Tab, se repiten las mismas en este punto antes de ejecutar la consulta
     	    ApplicationMessage aMsg = null;
     	    aMsg = enterBatchNumber();
-		aMsg = enterTrxType();
-		aMsg = enterFromDate();
+			aMsg = enterTrxType();
+			aMsg = enterFromDate();
+			
 	    if (aMsg != null) {
     	        if (aMsg.getLevel().equalsIgnoreCase(ApplicationMessage.ERROR)) {
 		        ErrorMessageWindow x = new ErrorMessageWindow(null, aMsg.getText());
