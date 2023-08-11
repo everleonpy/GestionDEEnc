@@ -1165,6 +1165,13 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 	
+	/**
+	* 
+	* @param idMov
+	* @param idDet
+	* @param conn
+	* @return
+	*/
 	public static TmpFactuDE_E81 getgValorItem ( int idMov, int idDet ,Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;

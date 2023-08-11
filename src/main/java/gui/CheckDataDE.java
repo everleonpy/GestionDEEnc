@@ -27,14 +27,14 @@ public class CheckDataDE extends JFrame {
 	private static CheckStatusDETools statusTools;
 	private static String propFile;
 	private static JTextPane txtResponse;
+	private JTextField txtIdCancelacion;
 	
 	/**
 	 * Launch the application.
 	 * @throws SifenException 
 	 */
 	public static void main(String[] args) throws SifenException 
-	{
-		
+	{	
 		
 		if( args.length > 0 ) 
 		{
@@ -63,7 +63,8 @@ public class CheckDataDE extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public CheckDataDE() {
+	public CheckDataDE() 
+	{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 920, 596);
 		contentPane = new JPanel();
@@ -99,7 +100,7 @@ public class CheckDataDE extends JFrame {
 		contentPane.add(btnLote);
 		
 		txtResponse = new JTextPane();
-		txtResponse.setBounds(28, 112, 595, 391);
+		txtResponse.setBounds(28, 112, 595, 357);
 		contentPane.add(txtResponse);
 		
 		JLabel lblRespuesta = new JLabel("Respuesta : ");
@@ -141,7 +142,7 @@ public class CheckDataDE extends JFrame {
 		contentPane.add(btnRUC);
 		
 		JLabel lblStatus = new JLabel("");
-		lblStatus.setBounds(28, 532, 760, 28);
+		lblStatus.setBounds(28, 532, 880, 28);
 		contentPane.add(lblStatus);
 		
 		JButton btnExit = new JButton("Salir");
@@ -152,7 +153,32 @@ public class CheckDataDE extends JFrame {
 				System.exit(0);
 			}
 		});
-		btnExit.setBounds(635, 463, 273, 40);
+		btnExit.setBounds(635, 429, 273, 40);
 		contentPane.add(btnExit);
+		
+		JButton btnCancelDE = new JButton("Evento Cancelacion DE");
+		btnCancelDE.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				try {
+					txtResponse.setText(statusTools.eventoCancelacion(txtInput.getText().trim(), txtResponse.getText().trim(), txtIdCancelacion.getText().trim()));
+				} catch (IOException | SAXException | ParserConfigurationException | SifenException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		
+		btnCancelDE.setBounds(635, 219, 273, 40);
+		contentPane.add(btnCancelDE);
+		
+		txtIdCancelacion = new JTextField();
+		txtIdCancelacion.setBounds(130, 481, 282, 39);
+		contentPane.add(txtIdCancelacion);
+		txtIdCancelacion.setColumns(10);
+		
+		JLabel lblNewLabel_1 = new JLabel("ID Cancelacion : ");
+		lblNewLabel_1.setBounds(12, 481, 116, 28);
+		contentPane.add(lblNewLabel_1);
 	}
 }

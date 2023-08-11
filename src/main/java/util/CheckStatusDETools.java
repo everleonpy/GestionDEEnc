@@ -4,16 +4,24 @@ package util;
 
 import com.roshka.sifen.Sifen;
 import com.roshka.sifen.core.SifenConfig;
+import com.roshka.sifen.core.beans.EventosDE;
 import com.roshka.sifen.core.beans.response.RespuestaConsultaDE;
 import com.roshka.sifen.core.beans.response.RespuestaConsultaLoteDE;
 import com.roshka.sifen.core.beans.response.RespuestaConsultaRUC;
+import com.roshka.sifen.core.beans.response.RespuestaRecepcionEvento;
 import com.roshka.sifen.core.exceptions.SifenException;
+import com.roshka.sifen.core.fields.request.event.TgGroupTiEvt;
+import com.roshka.sifen.core.fields.request.event.TrGeVeCan;
+import com.roshka.sifen.core.fields.request.event.TrGesEve;
 import com.roshka.sifen.core.fields.response.ruc.TxContRuc;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.time.LocalDateTime;
+import java.util.Collections;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -59,6 +67,48 @@ public class CheckStatusDETools
 		return "*** No hay respuesta desde el SIFEN ****";
 	}
 
+	
+	/**
+	* 
+	* @param cdc
+	* @param msgCancelacion
+	* @param idEvento
+	* @return
+	 * @throws ParserConfigurationException 
+	 * @throws SAXException 
+	 * @throws IOException 
+	 * @throws SifenException 
+	*/
+	public String eventoCancelacion(String cdc, String msgCancelacion, String idEvento) throws IOException, SAXException, ParserConfigurationException, SifenException 
+	{
+		LocalDateTime currentDate = LocalDateTime.now();
+		 // Evento de Cancelación
+        TrGeVeCan trGeVeCan = new TrGeVeCan();
+        trGeVeCan.setId(cdc);
+        trGeVeCan.setmOtEve(msgCancelacion);
+
+        TgGroupTiEvt tgGroupTiEvt = new TgGroupTiEvt();
+        tgGroupTiEvt.setrGeVeCan(trGeVeCan);
+        
+        TrGesEve rGesEve1 = new TrGesEve();
+        rGesEve1.setId(idEvento);
+        rGesEve1.setdFecFirma(currentDate);
+        rGesEve1.setgGroupTiEvt(tgGroupTiEvt);
+
+        EventosDE eventosDE = new EventosDE();
+        eventosDE.setrGesEveList(Collections.singletonList(rGesEve1));
+
+        RespuestaRecepcionEvento resp = Sifen.recepcionEvento(eventosDE);
+        
+        if( resp.getRespuestaBruta() != null ) 
+        {
+        	String xml = resp.getRespuestaBruta();
+        	return format(xml, true);
+        }
+        
+        return "*** No hay respuesta desde el SIFEN ****";
+	}
+	
 
 	/**
 	* 
