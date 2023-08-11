@@ -2,16 +2,12 @@ package dao;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
 import org.apache.commons.math3.util.Precision;
-
 import nider.TmpFactuDE_A;
 import nider.TmpFactuDE_B;
 import nider.TmpFactuDE_C;
@@ -44,12 +40,15 @@ public class FacturaElectronicaDAO {
 		ResultSet rs = null;
 		boolean dataFound = false;
 		java.util.Date fromDate = null;    
+		@SuppressWarnings("unused")
 		java.util.Date toDate = null;  
 		int idMov = 0;
 		int rowsCounter = 0;
+		@SuppressWarnings("unused")
 		int index = 0;
 		// el valor de este atributo ira incrementando a medida que se vayan cargando
 		// transacciones al lote hasta llegar a "maxTrxQty"
+		@SuppressWarnings("unused")
 		int trxCounter = 0;
 		//
 		try {
@@ -110,9 +109,11 @@ public class FacturaElectronicaDAO {
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			ArrayList<TmpFactuDE_A> deList = new ArrayList<TmpFactuDE_A>();
 			
-			while (rs.next()) {
+			while (rs.next()) 
+			{
 				dataFound = true;
 				idMov = rs.getInt("idMov");
+				//itDe =
 				System.out.println("********* Transaccion: " + idMov);
 				TmpFactuDE_A o = new TmpFactuDE_A();
 				o.setdDVId(rs.getShort("dDVId"));
@@ -178,6 +179,12 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 	
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	 */
 	public static TmpFactuDE_B getgOpeDE ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -191,7 +198,7 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.iTipEmi, x.dDesTipEmi, x.dCodSeg,");
 			buffer.append(" x.dInfoEmi, x.dInfoFisc");
 			buffer.append(" from tmpFactuDE_B x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -225,6 +232,13 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
+	
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	*/
 	public static TmpFactuDE_C getgTimb ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -241,10 +255,11 @@ public class FacturaElectronicaDAO {
 			buffer.append(" x.dPunExp, x.dNumDoc, x.dSerieNum, x.dFeIniT,");
 			buffer.append(" x.idConfig");
 			buffer.append(" from tmpFactuDE_C x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
+		
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_C o = new TmpFactuDE_C();
@@ -286,6 +301,13 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
+	
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	 */
 	public static TmpFactuDE_D getgDatGralOpe ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -303,7 +325,7 @@ public class FacturaElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dFeEmiDE");
 			buffer.append(" from tmpFactuDE_D x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -353,6 +375,13 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
+	
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	*/
 	public static TmpFactuDE_D1 getgOpeCom ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -367,7 +396,7 @@ public class FacturaElectronicaDAO {
 			buffer.append(" x.dDesTImp, x.cMoneOpe, x.dDesMoneOpe, x.dCondTiCam,");
 			buffer.append(" x.dTiCam, x.iCondAnt, x.dDesCondAnt");
 			buffer.append(" from tmpFactuDE_D1 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -407,6 +436,12 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	*/
 	public static TmpFactuDE_D2 getgEmis ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -422,7 +457,7 @@ public class FacturaElectronicaDAO {
 			buffer.append(" x.dDesDepEmi, x.cDisEmi, x.dDesDisEmi, x.cCiuEmi,");
 			buffer.append(" x.dDesCiuEmi, x.dTelEmi, x.dEmailE, x.dDenSuc");
 			buffer.append(" from tmpFactuDE_D2 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -489,7 +524,7 @@ public class FacturaElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.cActEco, x.dDesActEco");
 			buffer.append(" from tmpFactuDE_D21 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -535,7 +570,7 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.iTipIDRespDE, x.dDTipIDRespDE, x.dNumIDRespDE,");
 			buffer.append(" x.dNomRespDE, x.dCarRespDE");
 			buffer.append(" from tmpFactuDE_D22 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -570,6 +605,12 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 	
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	*/
 	public static TmpFactuDE_D3 getgDatRec ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -589,7 +630,7 @@ public class FacturaElectronicaDAO {
 			buffer.append(" x.idConfig");
 
 			buffer.append(" from tmpFactuDE_D3 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -643,6 +684,13 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
+	
+	/**
+	* 
+	* @param idMov
+	* @param conn
+	* @return
+	*/
 	public static TmpFactuDE_E getgCamFE ( int idMov, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -655,7 +703,7 @@ public class FacturaElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dDesIndPres, x.dFecEmNR, x.iIndPres");
 			buffer.append(" from tmpFactuDE_E x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -700,7 +748,7 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.dModCont, x.dEntCont, x.dAnoCont,");
 			buffer.append(" x.dSecCont, x.dFeCodCont");
 			buffer.append(" from tmpFactuDE_D x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -746,7 +794,7 @@ public class FacturaElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dDCondOpe, x.iCondOpe");
 			buffer.append(" from tmpFactuDE_E7 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -800,7 +848,7 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.cMoneTiPag, x.dDesTiPag, x.dDMoneTiPag,");
 			buffer.append(" x.dMonTiPag, x.iTiPago");
 			buffer.append(" from tmpFactuDE_E71 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -861,7 +909,7 @@ public class FacturaElectronicaDAO {
 			buffer.append(" x.dNomTit, x.dNumTarj, x.dRSProTar, x.dRUCProTar,");
 			buffer.append(" x.iDenTarj, iForProPa");
 			buffer.append(" from tmpFactuDE_E711 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -911,7 +959,7 @@ public class FacturaElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dBcoEmi, x.dNumCheq");
 			buffer.append(" from tmpFactuDE_E712 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -955,7 +1003,7 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.dCuotas, x.dDCondCred, x.dMonEnt,");
 			buffer.append(" x.dPlazoCre, x.iCondCred");
 			buffer.append(" from tmpFactuDE_E72 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -1004,7 +1052,7 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.cMoneCuo, x.dDMoneCuo, x.dMonCuota,");
 			buffer.append(" x.dVencCuo");
 			buffer.append(" from tmpFactuDE_E721 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -1049,20 +1097,22 @@ public class FacturaElectronicaDAO {
 			StringBuffer buffer = new StringBuffer();
 
 			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.cPaisOrig, x.cRelMerc, x.cUniMed,");
+			buffer.append("select x.idConfig, x.iddet ,x.cPaisOrig, x.cRelMerc, x.cUniMed,");
 			buffer.append(" x.dCanQuiMer, x.dCantProSer, x.dCDCAnticipo, x.dCodInt,");
 			buffer.append(" x.dDesPaisOrig, x.dDesProSer, x.dDesRelMerc, x.dDesUniMed,");
 			buffer.append(" x.dDncpE, x.dDncpG, x.dGtin, x.dGtinPq,");
 			buffer.append(" x.dInfItem, x.dNCM, x.dParAranc, x.dPorQuiMer");
 			buffer.append(" from tmpFactuDE_E8 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			ArrayList<TmpFactuDE_E8> lst = new ArrayList<TmpFactuDE_E8>();
-			while (rs.next()) {
+			
+			while (rs.next()) 
+			{
 				dataFound = true;
 				TmpFactuDE_E8 o = new TmpFactuDE_E8();
 				o.setcPaisOrig(rs.getString("cPaisOrig"));
@@ -1087,10 +1137,13 @@ public class FacturaElectronicaDAO {
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
 				// obtener el elemento correspondiente a los valores del item
-				TmpFactuDE_E81 valItem = FacturaElectronicaDAO.getgValorItem(idMov, conn);
+				System.out.println("IDEDET :      "+rs.getInt("iddet"));
+				TmpFactuDE_E81 valItem = FacturaElectronicaDAO.getgValorItem(idMov, rs.getInt("iddet"),conn);
+				System.out.println(" DESCRIPCION ITEM : "+rs.getString("dDesProSer"));
+				System.out.println(" VALOR ITEM  :    "+valItem.getdPUniProSer());
 				o.setgValorItem(valItem);
 				// obtener el elemento correspondiente al IVA del item
-				TmpFactuDE_E82 camIVA = FacturaElectronicaDAO.getgCamIVA(idMov, conn);
+				TmpFactuDE_E82 camIVA = FacturaElectronicaDAO.getgCamIVA(idMov, rs.getInt("iddet"), conn);
 				o.setgCamIVA(camIVA);
 				//
 				lst.add(o);
@@ -1112,7 +1165,7 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 	
-	public static TmpFactuDE_E81 getgValorItem ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E81 getgValorItem ( int idMov, int idDet ,Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -1124,25 +1177,34 @@ public class FacturaElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dPUniProSer, x.dTiCamIt, x.dTotBruOpeItem");
 			buffer.append(" from tmpFactuDE_E81 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and iddet = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
+			ps.setInt(2, idDet);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_E81 o = new TmpFactuDE_E81();
-			if (rs.next()) {
+			
+			while (rs.next()) 
+			{
 				dataFound = true;
+				System.out.println("************************************************************************************");
+				System.out.println("");
+				System.out.println("PRECIO UNITARIO : "+ rs.getDouble("dPUniProSer"));
+				System.out.println("");
+				System.out.println("************************************************************************************");
 				o.setdPUniProSer(new BigDecimal(rs.getDouble("dPUniProSer")));
 				o.setdTiCamIt(new BigDecimal(rs.getDouble("dTiCamIt")));
 				o.setdTotBruOpeItem(new BigDecimal(rs.getDouble("dTotBruOpeItem")));
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
 				// obtener el elemento gValorRestaItem
-				TmpFactuDE_E811 r = FacturaElectronicaDAO.getgValorRestaItem(idMov, conn);
+				TmpFactuDE_E811 r = FacturaElectronicaDAO.getgValorRestaItem(idMov, idDet ,conn);
 				o.setgValorRestaItem(r);
 				//System.out.println("TmpFactuDE_E81: " + rs.getDouble("dPUniProSer"));				
 			}
+			
 			if (dataFound == true) {
 				return o;
 			} else {
@@ -1158,7 +1220,7 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 	
-	public static TmpFactuDE_E82 getgCamIVA ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E82 getgCamIVA ( int idMov, int idDet,Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -1171,14 +1233,17 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.dBasGravIVA, x.dDesAfecIVA, x.dLiqIVAItem,");
 			buffer.append(" x.dPropIVA, x.dTasaIVA, x.iAfecIVA");
 			buffer.append(" from tmpFactuDE_E82 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and iddet = ? and tipo=1");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
+			ps.setInt(2, idDet);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_E82 o = new TmpFactuDE_E82();
-			if (rs.next()) {
+			
+			while (rs.next()) 
+			{
 				dataFound = true;
 				System.out.println("new: " + new BigDecimal(rs.getDouble("dBasGravIVA")));
 				System.out.println("valueOf: " + BigDecimal.valueOf(rs.getDouble("dBasGravIVA")));
@@ -1195,6 +1260,7 @@ public class FacturaElectronicaDAO {
 				//
 				//System.out.println("TmpFactuDE_E82: " + rs.getShort("iAfecIVA"));				
 			}
+			
 			if (dataFound == true) {
 				return o;
 			} else {
@@ -1210,7 +1276,7 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
-	public static TmpFactuDE_E811 getgValorRestaItem ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E811 getgValorRestaItem ( int idMov, int idDet ,Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -1223,14 +1289,16 @@ public class FacturaElectronicaDAO {
 			buffer.append("select x.idConfig, x.dAntGloPreUniIt, x.dAntPreUniIt, x.dDescGloItem,");
 			buffer.append(" x.dDescItem, x.dPorcDesIt, x.dTotOpeGs, x.dTotOpeItem");
 			buffer.append(" from tmpFactuDE_E811 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and iddet = ? and tipo=1");
 			//
-			ps = conn.prepareStatement(buffer.toString());
+			ps = conn.prepareStatement(buffer.toString()); 
 			ps.setInt(1, idMov);
+			ps.setInt(2, idDet);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_E811 o = new TmpFactuDE_E811();
-			if (rs.next()) {
+			while (rs.next()) 
+			{
 				dataFound = true;
 				o.setdAntGloPreUniIt(new BigDecimal(rs.getDouble("dAntGloPreUniIt")));
 				o.setdAntPreUniIt(new BigDecimal(rs.getDouble("dAntPreUniIt")));
@@ -1258,8 +1326,6 @@ public class FacturaElectronicaDAO {
 			Util.closeStatement(ps);
 		}	
 	}
-	
-	
 	
 	
 	private static String DatetoString(java.util.Date toDate) 

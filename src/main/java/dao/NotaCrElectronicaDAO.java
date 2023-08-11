@@ -164,14 +164,16 @@ public class NotaCrElectronicaDAO {
 			buffer.append("select x.idConfig, x.iTipEmi, x.dDesTipEmi, x.dCodSeg,");
 			buffer.append(" x.dInfoEmi, x.dInfoFisc");
 			buffer.append(" from tmpFactuDE_B x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_B o = new TmpFactuDE_B();
-			if (rs.next()) {
+			
+			if (rs.next()) 
+			{
 				dataFound = true;
 				o.setdCodSeg(rs.getString("dCodSeg"));
 				o.setdDesTipEmi(rs.getString("dDesTipEmi"));
@@ -214,7 +216,7 @@ public class NotaCrElectronicaDAO {
 			buffer.append(" x.dPunExp, x.dNumDoc, x.dSerieNum, x.dFeIniT,");
 			buffer.append(" x.idConfig");
 			buffer.append(" from tmpFactuDE_C x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5 ");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -276,7 +278,7 @@ public class NotaCrElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dFeEmiDE");
 			buffer.append(" from tmpFactuDE_D x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -340,7 +342,7 @@ public class NotaCrElectronicaDAO {
 			buffer.append(" x.dDesTImp, x.cMoneOpe, x.dDesMoneOpe, x.dCondTiCam,");
 			buffer.append(" x.dTiCam, x.iCondAnt, x.dDesCondAnt");
 			buffer.append(" from tmpFactuDE_D1 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -395,7 +397,7 @@ public class NotaCrElectronicaDAO {
 			buffer.append(" x.dDesDepEmi, x.cDisEmi, x.dDesDisEmi, x.cCiuEmi,");
 			buffer.append(" x.dDesCiuEmi, x.dTelEmi, x.dEmailE, x.dDenSuc");
 			buffer.append(" from tmpFactuDE_D2 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -462,7 +464,7 @@ public class NotaCrElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.cActEco, x.dDesActEco");
 			buffer.append(" from tmpFactuDE_D21 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -508,7 +510,7 @@ public class NotaCrElectronicaDAO {
 			buffer.append("select x.idConfig, x.iTipIDRespDE, x.dDTipIDRespDE, x.dNumIDRespDE,");
 			buffer.append(" x.dNomRespDE, x.dCarRespDE");
 			buffer.append(" from tmpFactuDE_D22 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -562,7 +564,7 @@ public class NotaCrElectronicaDAO {
 			buffer.append(" x.idConfig");
 
 			buffer.append(" from tmpFactuDE_D3 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -628,7 +630,7 @@ public class NotaCrElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.iMotEmi, x.dDesMotEmi");
 			buffer.append(" from tmpFactuDE_E5 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -669,13 +671,13 @@ public class NotaCrElectronicaDAO {
 			StringBuffer buffer = new StringBuffer();
 
 			// datos de la cabecera de la transaccion 
-			buffer.append("select x.idConfig, x.cPaisOrig, x.cRelMerc, x.cUniMed,");
+			buffer.append("select x.idConfig, x.iddet, x.cPaisOrig, x.cRelMerc, x.cUniMed,");
 			buffer.append(" x.dCanQuiMer, x.dCantProSer, x.dCDCAnticipo, x.dCodInt,");
 			buffer.append(" x.dDesPaisOrig, x.dDesProSer, x.dDesRelMerc, x.dDesUniMed,");
 			buffer.append(" x.dDncpE, x.dDncpG, x.dGtin, x.dGtinPq,");
 			buffer.append(" x.dInfItem, x.dNCM, x.dParAranc, x.dPorQuiMer");
 			buffer.append(" from tmpFactuDE_E8 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5 ");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -707,10 +709,10 @@ public class NotaCrElectronicaDAO {
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
 				// obtener el elemento correspondiente a los valores del item
-				TmpFactuDE_E81 valItem = NotaCrElectronicaDAO.getgValorItem(idMov, conn);
+				TmpFactuDE_E81 valItem = NotaCrElectronicaDAO.getgValorItem(idMov, rs.getInt("iddet"), conn);
 				o.setgValorItem(valItem);
 				// obtener el elemento correspondiente al IVA del item
-				TmpFactuDE_E82 camIVA = NotaCrElectronicaDAO.getgCamIVA(idMov, conn);
+				TmpFactuDE_E82 camIVA = NotaCrElectronicaDAO.getgCamIVA(idMov, rs.getInt("iddet"), conn);
 				o.setgCamIVA(camIVA);
 				//
 				lst.add(o);
@@ -732,7 +734,7 @@ public class NotaCrElectronicaDAO {
 		}	
 	}
 	
-	public static TmpFactuDE_E81 getgValorItem ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E81 getgValorItem ( int idMov, int idDet,Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -744,10 +746,12 @@ public class NotaCrElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dPUniProSer, x.dTiCamIt, x.dTotBruOpeItem");
 			buffer.append(" from tmpFactuDE_E81 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5 and iddet = ?");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
+			ps.setInt(2, idDet);
+			
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_E81 o = new TmpFactuDE_E81();
@@ -778,7 +782,7 @@ public class NotaCrElectronicaDAO {
 		}	
 	}
 	
-	public static TmpFactuDE_E82 getgCamIVA ( int idMov, Connection conn ) {
+	public static TmpFactuDE_E82 getgCamIVA ( int idMov, int idDet, Connection conn ) {
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -791,10 +795,12 @@ public class NotaCrElectronicaDAO {
 			buffer.append("select x.idConfig, x.dBasGravIVA, x.dDesAfecIVA, x.dLiqIVAItem,");
 			buffer.append(" x.dPropIVA, x.dTasaIVA, x.iAfecIVA");
 			buffer.append(" from tmpFactuDE_E82 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and x.tipo = 5 and iddet = ?");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
+			ps.setInt(2, idDet);
+			
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_E82 o = new TmpFactuDE_E82();

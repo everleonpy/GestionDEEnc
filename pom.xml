@@ -106,8 +106,8 @@
 		          </descriptorRefs>
 		          <archive>
 		              <manifest>
-		                <!-- mainClass>business.LogonWindowLauncher</mainClass -->
-		               <mainClass>gui.CheckDataDE</mainClass>
+		                <mainClass>business.LogonWindowLauncher</mainClass>
+		               <!-- mainClass>gui.CheckDataDE</mainClass -->
 		              </manifest>
 		          </archive>
 		      </configuration>

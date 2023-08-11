@@ -27,7 +27,7 @@ public class Util {
 	public static Connection getConnection()  
 	{
 		//String ipAddress = "192.168.30.100";  // IP Jessy Lens
-		String ipAddress = "192.168.1.190";    // IP Agro
+		String ipAddress = "192.168.1.190";    // IP Agro 
 		String port = "1433";
 		//String dbName = "JessyLens"; 
 		String dbName = "agro"; 
