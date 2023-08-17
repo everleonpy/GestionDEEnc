@@ -57,7 +57,7 @@ abstract class BaseRequest {
 
             // esto lo habilite para ver el xml formado
             // desde aqui
-            /*
+            
             final StringWriter sw = new StringWriter();
 
             try {
@@ -69,9 +69,10 @@ abstract class BaseRequest {
             }
 
             String xml = sw.toString();
-            System.out.println("****************imprimiendo xml");
+            System.out.println("**************************** IMPRIMIENDO  XML *************************************");
             System.out.println(xml);
-            */
+            System.out.println("***********************************************************************************");
+            
             // ... hasta aqui
             
             // Realizamos la consulta

@@ -592,16 +592,21 @@ public class SendRcvInvoicesAsync {
 				Iterator itr2 = cn.iterator();
 				while (itr2.hasNext()) {
 					TmpFactuDE_E71 x = (TmpFactuDE_E71) itr2.next();
-					//System.out.println("forma pago: " + x.getcMoneTiPag() + " - " + x.getdDesTiPag() + " - " + x.getdMonTiPag());
+					System.out.println("forma pago: " + x.getcMoneTiPag() + " - " + x.getdDesTiPag() + " - " + x.getdMonTiPag());
 					TgPaConEIni gPaConEIni = new TgPaConEIni();
 					gPaConEIni.setiTiPago(TiTiPago.getByVal(x.getiTiPago()));
 					bd = new BigDecimal(x.getdMonTiPag());
 					bd = bd.setScale(4, RoundingMode.HALF_UP);
 					gPaConEIni.setdMonTiPag(bd);
 					gPaConEIni.setcMoneTiPag(CMondT.getByName(x.getcMoneTiPag()));
-					if (x.getcMoneTiPag().equalsIgnoreCase("PYG") == false) {
+					
+					if (x.getcMoneTiPag().equalsIgnoreCase("PYG") == false) 
+					{
+						System.out.println(" [  COTIZACION   ] "+x.getdTiCamTiPag());
 						gPaConEIni.setdTiCamTiPag(new BigDecimal(x.getdTiCamTiPag()));
+						System.out.println(" [ ASIGNADO  ] "+gPaConEIni.getdTiCamTiPag());
 					}
+					
 					// tarjetas de credito o debito
 					if (x.getgPagTarCD() != null) {
 						codePlace = "Asignar gPagTarDC";

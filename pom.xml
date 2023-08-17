@@ -5,16 +5,18 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>AvanzaGestionDE</groupId>
     <artifactId>GestionDE</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version> 
 
     <name>AvanzaGestionDE</name>
     <description>Gestion de documentos electronicos en Avanza</description>
     
      <properties>
-	    <maven.compiler.target>1.8</maven.compiler.target>
-	    <maven.compiler.source>1.8</maven.compiler.source>
-	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-   		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<jersey.version>2.12</jersey.version>
+		<jersey.scope>compile</jersey.scope>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	  </properties>
 	  
     <dependencies>
@@ -77,12 +79,26 @@
 		   <artifactId>xercesImpl</artifactId>
 		   <version>2.9.0</version>
 		</dependency>
-		     
+		
+	    <!-- Jersey core Servlet 2.x implementation -->
+	    <dependency>
+	        <groupId>org.glassfish.jersey.containers</groupId>
+	        <artifactId>jersey-container-servlet-core</artifactId>
+	        <version>${jersey.version}</version>
+	        <scope>${jersey.scope}</scope>
+	    </dependency>
+	 
+	    <!-- Jersey Multipart entity providers support module -->
+	    <dependency>
+	        <groupId>org.glassfish.jersey.media</groupId>
+	        <artifactId>jersey-media-multipart</artifactId>
+	        <version>${jersey.version}</version>
+	        <scope>${jersey.scope}</scope>
+	    </dependency>
+
     </dependencies>
     
-    
      <build>
-     
 	     <resources>
 	        <resource>
 	            <directory>src/main/java</directory>
@@ -107,7 +123,7 @@
 		          <archive>
 		              <manifest>
 		                <mainClass>business.LogonWindowLauncher</mainClass>
-		               <!-- mainClass>gui.CheckDataDE</mainClass-->
+		               <!-- mainClass>gui.CheckDataDE</mainClass -->
 		              </manifest>
 		          </archive>
 		      </configuration>

@@ -14,14 +14,15 @@ import com.roshka.sifen.core.fields.request.event.TgGroupTiEvt;
 import com.roshka.sifen.core.fields.request.event.TrGeVeCan;
 import com.roshka.sifen.core.fields.request.event.TrGesEve;
 import com.roshka.sifen.core.fields.response.ruc.TxContRuc;
-
+import dto.TmpFactuDE_ADTO;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.time.LocalDateTime;
 import java.util.Collections;
-
+import java.util.Date;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -52,9 +53,9 @@ public class CheckStatusDETools
 	* @param nroLote
 	* @return
 	* @throws SifenException
-	 * @throws ParserConfigurationException 
-	 * @throws SAXException 
-	 * @throws IOException 
+	* @throws ParserConfigurationException 
+	* @throws SAXException 
+	* @throws IOException 
 	*/
 	public String checkLote(String nroLote) throws SifenException, IOException, SAXException, ParserConfigurationException 
 	{
@@ -74,10 +75,10 @@ public class CheckStatusDETools
 	* @param msgCancelacion
 	* @param idEvento
 	* @return
-	 * @throws ParserConfigurationException 
-	 * @throws SAXException 
-	 * @throws IOException 
-	 * @throws SifenException 
+	* @throws ParserConfigurationException 
+	* @throws SAXException 
+	* @throws IOException 
+	* @throws SifenException 
 	*/
 	public String eventoCancelacion(String cdc, String msgCancelacion, String idEvento) throws IOException, SAXException, ParserConfigurationException, SifenException 
 	{
@@ -132,6 +133,44 @@ public class CheckStatusDETools
 		return "*** No hay respuesta desde el SIFEN ****";
 	}
 	
+	
+	
+	/**
+	* Metodo encargado de Verificar el status de una FE via WS y actulizar la cabezera 
+	* @param date
+	* @return
+	 * @throws SifenException 
+	*/
+	public String checkCDCtoDate(String date) throws SifenException 
+	{
+		
+		Date dateProc = DateTools.getDate(date, null);
+		StringBuilder strResp = new StringBuilder();
+
+		if( dateProc != null ) 
+		{
+			/* Obtenemos la lista de los CDCs que no estan en estado Aprobado*/
+			List<String> listaCDCs = TmpFactuDE_ADTO.obtenrCDCs(dateProc);
+			if( listaCDCs != null ) 
+			{
+				
+				for (String cdc : listaCDCs) 
+				{
+					RespuestaConsultaDE resp = Sifen.consultaDE(cdc.trim());
+					if( resp.getdMsgRes().trim().equalsIgnoreCase("CDC encontrado") ) 
+					{
+						strResp.append("CDC  Encontrado : "+cdc+"\n");
+						TmpFactuDE_ADTO.updateStatus(cdc);
+					}
+				}
+			}
+			return strResp.toString();
+			
+		}
+		
+		return "FORMATE DE FECHA INCORRECTO ...";
+		
+	}
 	
 	
 	/**

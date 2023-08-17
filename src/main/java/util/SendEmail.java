@@ -1,5 +1,6 @@
 package util;
 
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -20,9 +21,9 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 /**
- *
- * @author eleon
- */
+*
+* @author eleon
+*/
 public class SendEmail {
     
     private static final String SERVER_HOST = "smtp.hostinger.com"; //"mail.softpoint.com.py";
@@ -51,13 +52,14 @@ public class SendEmail {
         //prop.put("mail.smtp.starttls.enable", "true"); //TLS
         prop.put("mail.smtp.auth", "true");
 
-        session = Session.getInstance(prop, new javax.mail.Authenticator() {
+        session = Session.getInstance(prop, new javax.mail.Authenticator() 
+        {
         
-             protected PasswordAuthentication getPasswordAuthentication() {
-
+             protected PasswordAuthentication getPasswordAuthentication() 
+             {
                 return new PasswordAuthentication(MAIL_FROM, "Fact2022ra*");
-
-            }
+             }
+             
         });
         
         session.setDebug(true);
@@ -71,14 +73,17 @@ public class SendEmail {
                 
                 if ( atachment != null ) {
                     Multipart multipart = new MimeMultipart();
-                    Iterator itr = atachment.iterator();
-                    while (itr.hasNext()) {
-                    	    String x = (String) itr.next();
+                    @SuppressWarnings("rawtypes")
+					Iterator itr = atachment.iterator();
+                    
+                    while (itr.hasNext()) 
+                    {
+                        String x = (String) itr.next();
                         if ( x != null  && x.length() > 0) {
                             MimeBodyPart atch = new MimeBodyPart();
                             DataSource ds = new  FileDataSource(x);
                             atch.setDataHandler(new DataHandler(ds));
-                            atch.setFileName(x);
+                            atch.setFileName(new File(x).getName());
                             multipart.addBodyPart(atch);
                         }
                     }

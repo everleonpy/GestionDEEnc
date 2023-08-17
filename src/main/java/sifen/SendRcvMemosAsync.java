@@ -218,7 +218,8 @@ public class SendRcvMemosAsync {
 			                 long orgId, 
 			                 long unitId, 
 			                 String userName, 
-			                 Connection conn ) {
+			                 Connection conn ) 
+	{
 		boolean sendOk = false;
 		RespuestaRecepcionLoteDE ret = null;
 		int respCode = 0;
@@ -261,6 +262,7 @@ public class SendRcvMemosAsync {
 			XmlMapper xmlMapper = new XmlMapper(module);
 			try {
 				Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(),Envelope.class);
+				System.out.println(" <<<<<<<<<<<<< XML : >>>>>>>>>>>>>>>>  "+tmp.toString());
 				respCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
 				batchNo = tmp.getBody().getrResEnviLoteDe().getdProtConsLote();
 				batchDate = tmp.getBody().getrResEnviLoteDe().getdFecProc();

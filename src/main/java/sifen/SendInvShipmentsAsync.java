@@ -241,7 +241,7 @@ public class SendInvShipmentsAsync {
 			System.out.println("CODIGO DE ESTADO: " + ret.getCodigoEstado());
 			System.out.println("COD RESP........: " + ret.getdCodRes());
 			System.out.println("MSG RESP........: " + ret.getdMsgRes());
-			System.out.println("XML.............: ");
+			System.out.println("XML.............: " );
 			System.out.println(ret.getRespuestaBruta());
 		} catch (Exception e1) {
 			sendOk = false;

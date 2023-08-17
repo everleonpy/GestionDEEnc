@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
@@ -17,6 +18,7 @@ import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.awt.event.ActionEvent;
+import javax.swing.SwingConstants;
 
 public class CheckDataDE extends JFrame {
 
@@ -28,6 +30,8 @@ public class CheckDataDE extends JFrame {
 	private static String propFile;
 	private static JTextPane txtResponse;
 	private JTextField txtIdCancelacion;
+	private JTextField txtFechaVerificar;
+	private JScrollPane scroll;
 	
 	/**
 	 * Launch the application.
@@ -100,8 +104,13 @@ public class CheckDataDE extends JFrame {
 		contentPane.add(btnLote);
 		
 		txtResponse = new JTextPane();
-		txtResponse.setBounds(28, 112, 595, 357);
-		contentPane.add(txtResponse);
+		//txtResponse.setBounds(28, 112, 595, 357);
+		
+		scroll = new JScrollPane(txtResponse);
+		scroll.setBounds(28, 112, 595, 357);
+		
+		//contentPane.add(txtResponse);
+		contentPane.add(scroll);
 		
 		JLabel lblRespuesta = new JLabel("Respuesta : ");
 		lblRespuesta.setBounds(28, 89, 415, 15);
@@ -173,12 +182,42 @@ public class CheckDataDE extends JFrame {
 		contentPane.add(btnCancelDE);
 		
 		txtIdCancelacion = new JTextField();
-		txtIdCancelacion.setBounds(130, 481, 282, 39);
+		txtIdCancelacion.setBounds(130, 481, 206, 39);
 		contentPane.add(txtIdCancelacion);
 		txtIdCancelacion.setColumns(10);
 		
 		JLabel lblNewLabel_1 = new JLabel("ID Cancelacion : ");
 		lblNewLabel_1.setBounds(12, 481, 116, 28);
 		contentPane.add(lblNewLabel_1);
+		
+		JButton btnStatusCheckFE = new JButton("Check Status F. Electronica");
+		btnStatusCheckFE.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				
+				try {
+					//TODO mandar la fecha a procesar como parametro
+					txtResponse.setText(statusTools.checkCDCtoDate(txtFechaVerificar.getText().trim()));
+				} catch (SifenException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		btnStatusCheckFE.setBounds(635, 377, 273, 40);
+		contentPane.add(btnStatusCheckFE);
+		
+		txtFechaVerificar = new JTextField();
+		txtFechaVerificar.setBounds(635, 481, 273, 39);
+		contentPane.add(txtFechaVerificar);
+		txtFechaVerificar.setColumns(10);
+		
+		JLabel lblNewLabel_1_1 = new JLabel("Fecha a Verificar (dd/mm/yyyy) : ");
+		lblNewLabel_1_1.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblNewLabel_1_1.setBounds(364, 481, 259, 40);
+		contentPane.add(lblNewLabel_1_1);
+		
+	
+		
 	}
 }

@@ -32,7 +32,8 @@ import nider.TmpFactuDE_E811;
 import nider.TmpFactuDE_E82;
 import util.UtilPOS;
 
-public class FacturaElectronicaDAO {
+public class FacturaElectronicaDAO 
+{
 	
 	public static ArrayList<TmpFactuDE_A> getDEList ( java.util.Date trxDate ) {
 		Connection conn =  null;
@@ -185,7 +186,8 @@ public class FacturaElectronicaDAO {
 	* @param conn
 	* @return
 	 */
-	public static TmpFactuDE_B getgOpeDE ( int idMov, Connection conn ) {
+	public static TmpFactuDE_B getgOpeDE ( int idMov, Connection conn ) 
+	{
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -203,9 +205,11 @@ public class FacturaElectronicaDAO {
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
 			rs = ps.executeQuery();
+			
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			TmpFactuDE_B o = new TmpFactuDE_B();
-			if (rs.next()) {
+			if (rs.next()) 
+			{
 				dataFound = true;
 				o.setdCodSeg(rs.getString("dCodSeg"));
 				o.setdDesTipEmi(rs.getString("dDesTipEmi"));
@@ -835,7 +839,8 @@ public class FacturaElectronicaDAO {
 		}	
 	}
 
-	public static ArrayList<TmpFactuDE_E71> getgPaConEIni ( int idMov, Connection conn ) {
+	public static ArrayList<TmpFactuDE_E71> getgPaConEIni ( int idMov, Connection conn ) 
+	{
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
@@ -846,7 +851,7 @@ public class FacturaElectronicaDAO {
 
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.cMoneTiPag, x.dDesTiPag, x.dDMoneTiPag,");
-			buffer.append(" x.dMonTiPag, x.iTiPago");
+			buffer.append(" x.dMonTiPag, x.iTiPago, x.dTiCamTiPag");
 			buffer.append(" from tmpFactuDE_E71 x");
 			buffer.append(" where x.idMov = ? and tipo=1");
 			//
@@ -864,7 +869,8 @@ public class FacturaElectronicaDAO {
 				o.setdMonTiPag(rs.getDouble("dMonTiPag"));
 				o.setIdConfig(rs.getInt("idConfig"));
 				o.setIdMov(idMov);
-				o.setiTiPago(rs.getShort("iTiPago"));	
+				o.setiTiPago(rs.getShort("iTiPago"));
+				o.setdTiCamTiPag(rs.getDouble("dTiCamTiPag"));
 				// obtener lo datos de la tarjetas o el cheque
 				o.setgPagTarCD(null);
 				o.setgPagCheq(null);
@@ -1196,11 +1202,11 @@ public class FacturaElectronicaDAO {
 			while (rs.next()) 
 			{
 				dataFound = true;
-				System.out.println("************************************************************************************");
+				/*System.out.println("************************************************************************************");
 				System.out.println("");
 				System.out.println("PRECIO UNITARIO : "+ rs.getDouble("dPUniProSer"));
 				System.out.println("");
-				System.out.println("************************************************************************************");
+				System.out.println("************************************************************************************");*/
 				o.setdPUniProSer(new BigDecimal(rs.getDouble("dPUniProSer")));
 				o.setdTiCamIt(new BigDecimal(rs.getDouble("dTiCamIt")));
 				o.setdTotBruOpeItem(new BigDecimal(rs.getDouble("dTotBruOpeItem")));
@@ -1209,7 +1215,7 @@ public class FacturaElectronicaDAO {
 				// obtener el elemento gValorRestaItem
 				TmpFactuDE_E811 r = FacturaElectronicaDAO.getgValorRestaItem(idMov, idDet ,conn);
 				o.setgValorRestaItem(r);
-				//System.out.println("TmpFactuDE_E81: " + rs.getDouble("dPUniProSer"));				
+							
 			}
 			
 			if (dataFound == true) {
