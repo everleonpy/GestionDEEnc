@@ -43,7 +43,7 @@ public class CheckStatusDETools
 		if( fileprop != null ) 
 		{
 			sifenConfig = SifenConfig.cargarConfiguracion(fileprop);
-			 Sifen.setSifenConfig(sifenConfig);
+			Sifen.setSifenConfig(sifenConfig);
 		}
 	}
 	

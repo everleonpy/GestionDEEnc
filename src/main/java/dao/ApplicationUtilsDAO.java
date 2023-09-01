@@ -4,12 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import dao.Util;
 import business.AppConfig;
 import dao.ProblemaDatosException;
 
-public class ApplicationUtilsDAO {
+public class ApplicationUtilsDAO 
+{
 	 
 	/**
 	* Este metodo tiene como objetivo obtener el valor de una secuencia 

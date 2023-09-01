@@ -4,12 +4,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import dao.InvOptionsDAO;
 import dao.RcvCustomerSitesDAO;
 import dao.RcvCustomersDAO;
 import dao.RcvCustomersTrxDAO;
-import dao.ProblemaDatosException;
 import pojo.FndSite;
 import pojo.RcvCustomer;
 import pojo.RcvCustomerSite;
@@ -248,7 +246,8 @@ public class EBTransactionsController {
     
     public void getSheetData ( long transactionId ) {
     	selectedTransaction = null;
-        Iterator itr1 = transactionsList.iterator();
+        @SuppressWarnings("rawtypes")
+		Iterator itr1 = transactionsList.iterator();
         while (itr1.hasNext()) {
         	RcvCustomerTrx i = (RcvCustomerTrx) itr1.next();
     	    if (i.getIdentifier() == transactionId) {

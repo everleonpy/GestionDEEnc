@@ -19,7 +19,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 */
 public class ClientRSPdf 
 {
-	 public static final String DOWNLOAD_FILE_LOCATION = "/tmp/";
+	 public static  String DOWNLOAD_FILE_LOCATION = "/tmp/";
 	
 	 private static ClientConfig clientConfig = null;
      private static Client client = null;
@@ -34,8 +34,8 @@ public class ClientRSPdf
      private static String qualifiedDownloadFilePath = null;
      
      
-     
     /**
+    * Descarga el reporte en formato pdf y lo guarda en una carpeta asignada via el atributo DOWNLOAD_FILE_LOCATION
     * 
     * @param urlApi
     * @return
@@ -45,6 +45,11 @@ public class ClientRSPdf
 	{
 			try 
 			{
+				
+				System.out.println("*-------------------------------------------------------");
+				System.out.println(" Conectando a  : "+urlApi+fileName);
+				System.out.println("*-------------------------------------------------------");
+				
 				// Invocar el servicio después de configurar los parámetros necesarios
 				clientConfig = new ClientConfig();
 				clientConfig.register(MultiPartFeature.class);
@@ -55,7 +60,7 @@ public class ClientRSPdf
 				// Invocamos al service
 				invocationBuilder = webTarget.request();
 				// invocationBuilder.header("Authorization", "Basic " + authorization); //
-				// Sitenemos algun tipo de seguridad Basico
+				// Setenemos algun tipo de seguridad Basico
 				response = invocationBuilder.get();
 	
 				// Obtenemos el código de respuesta
@@ -87,7 +92,11 @@ public class ClientRSPdf
 				return responseString;
 			} catch (Exception ex) 
 			{
-				ex.printStackTrace();
+				 //ex.printStackTrace();
+				 System.err.println(" *** ERROR *** ");
+			     System.err.println("Detalle del error: " + ex.getMessage());
+			     //System.err.println("Traza de la pila:");
+			     // ex.printStackTrace(System.err);
 			} finally 
 			{
 				// Liberamos los recursos

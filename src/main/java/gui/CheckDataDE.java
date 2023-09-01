@@ -32,16 +32,18 @@ public class CheckDataDE extends JFrame {
 	private JTextField txtIdCancelacion;
 	private JTextField txtFechaVerificar;
 	private JScrollPane scroll;
+	private JLabel lblStatus;
 	
 	/**
-	 * Launch the application.
-	 * @throws SifenException 
-	 */
+	* Launch the application.
+	* @throws SifenException 
+	*/
 	public static void main(String[] args) throws SifenException 
 	{	
 		
 		if( args.length > 0 ) 
 		{
+			System.out.println("Parameters : "+args[0]);
 			propFile = args[0];
 			if( propFile != null ) 
 			{
@@ -65,8 +67,8 @@ public class CheckDataDE extends JFrame {
 	}
 
 	/**
-	 * Create the frame.
-	 */
+	* Create the frame.
+	*/
 	public CheckDataDE() 
 	{
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -150,7 +152,7 @@ public class CheckDataDE extends JFrame {
 		btnRUC.setBounds(635, 161, 273, 40);
 		contentPane.add(btnRUC);
 		
-		JLabel lblStatus = new JLabel("");
+		lblStatus = new JLabel("");
 		lblStatus.setBounds(28, 532, 880, 28);
 		contentPane.add(lblStatus);
 		
@@ -216,8 +218,14 @@ public class CheckDataDE extends JFrame {
 		lblNewLabel_1_1.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblNewLabel_1_1.setBounds(364, 481, 259, 40);
 		contentPane.add(lblNewLabel_1_1);
-		
-	
-		
+			
+	}
+
+	public JLabel getLblStatus() {
+		return lblStatus;
+	}
+
+	public void setLblStatus(JLabel lblStatus) {
+		this.lblStatus = lblStatus;
 	}
 }

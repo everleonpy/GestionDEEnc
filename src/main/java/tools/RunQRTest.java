@@ -7,18 +7,17 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 
 /**
- *
- * @author eleon
- */
-public class RunQRTest {
+*
+* @author eleon
+*/
+public class RunQRTest 
+{
 
     /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
-        
-        
+    * @param args the command line arguments
+    */
+    public static void main(String[] args) 
+    {   
          JFrame frame = new JFrame( "Tutorial de Java, Swing" );
             frame.addWindowListener( new WindowAdapter() {
               public void windowClosing( WindowEvent evt ){
@@ -28,11 +27,8 @@ public class RunQRTest {
             frame.getContentPane().add( new TestQR(),BorderLayout.CENTER );
             frame.setSize( 819, 510 );
             frame.setVisible( true );
-            }
-        
-   
-        
-               
+    }
+                
  }
     
 

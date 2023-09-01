@@ -19,7 +19,7 @@ public class LogonWindowLauncher {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					new LogonWindow ( );
+					new LogonWindow ();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

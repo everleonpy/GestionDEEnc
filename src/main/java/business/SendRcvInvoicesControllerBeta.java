@@ -4,16 +4,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import com.roshka.sifen.core.beans.DocumentoElectronico;
 import com.roshka.sifen.core.exceptions.SifenException;
-
 import dao.FndSitesDAO;
-import dao.PosOptionsDAO;
-import dao.PosTrxEbBatchesDAO;
 import dao.RcvCustomersTrxDAO;
 import dao.RcvEbInvoicesDAO;
-import dao.RcvTrxEbBatchesDAO;
 import pojo.FndSite;
 import pojo.GenericStringsList;
 import pojo.PosOption;
@@ -311,6 +306,7 @@ public class SendRcvInvoicesControllerBeta {
 
 	public void getGroupData ( long groupNumber ) {
 		selectedGroup = null;
+		@SuppressWarnings("rawtypes")
 		Iterator itr1 = preparedList.iterator();
 		while (itr1.hasNext()) {
 			SendGroup i = (SendGroup) itr1.next();

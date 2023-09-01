@@ -4,9 +4,9 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
 import nider.TmpFactuDE_A;
 import nider.TmpFactuDE_B;
 import nider.TmpFactuDE_C;
@@ -15,47 +15,46 @@ import nider.TmpFactuDE_D2;
 import nider.TmpFactuDE_D21;
 import nider.TmpFactuDE_D22;
 import nider.TmpFactuDE_D3;
-import nider.TmpFactuDE_E;
 import nider.TmpFactuDE_E0;
-import nider.TmpFactuDE_E1;
 import nider.TmpFactuDE_E10;
 import nider.TmpFactuDE_E101;
 import nider.TmpFactuDE_E102;
 import nider.TmpFactuDE_E103;
 import nider.TmpFactuDE_E104;
 import nider.TmpFactuDE_E6;
-import nider.TmpFactuDE_E7;
-import nider.TmpFactuDE_E71;
-import nider.TmpFactuDE_E711;
-import nider.TmpFactuDE_E712;
-import nider.TmpFactuDE_E72;
-import nider.TmpFactuDE_E721;
 import nider.TmpFactuDE_E8;
 import nider.TmpFactuDE_E81;
-import nider.TmpFactuDE_E811;
-import nider.TmpFactuDE_E82;
 import nider.TmpFactuDE_G1;
 import util.UtilPOS;
 
-public class RemisionElectronicaDAO {
+
+public class RemisionElectronicaDAO 
+{
 	
-	public static ArrayList<TmpFactuDE_A> getDEList ( java.util.Date trxDate ) {
+	public static ArrayList<TmpFactuDE_A> getDEList ( java.util.Date trxDate ) 
+	{
 		Connection conn =  null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		boolean dataFound = false;
 		java.util.Date fromDate = null;    
 		java.util.Date toDate = null;  
+		String fechaProc;
 		int idMov = 0;
 		int rowsCounter = 0;
+		@SuppressWarnings("unused")
 		int index = 0;
 		// el valor de este atributo ira incrementando a medida que se vayan cargando
 		// transacciones al lote hasta llegar a "maxTrxQty"
+		@SuppressWarnings("unused")
 		int trxCounter = 0;
 		//
 		try {
+			
 			conn = Util.getConnection();
-			if (conn == null) {
+			
+			if (conn == null) 
+			{
 				return null;
 			}
 
@@ -65,25 +64,32 @@ public class RemisionElectronicaDAO {
 			// configuracion de la fecha
 			fromDate = trxDate;
 			toDate = UtilPOS.addDaysToDate(fromDate, 1);
+			fechaProc = DatetoString(fromDate);
+			System.out.println("Fechaaaaa : "+fechaProc);
 			
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.idMov, x.dVerFor, x.Id,");
 			buffer.append(" x.dDVId, x.dSisFact, x.dFecFirma");
 			buffer.append(" from tmpFactuDE_A x, tmpFactuDE_C c");
-			buffer.append(" where c.iTiDE = 7 and c.idMov = x.idMov and x.fechaFactura < ?");
-			buffer.append(" and x.fechaFactura >= ?");
-			buffer.append(" order by x.idMov");
+			buffer.append(" where c.iTiDE = 7 and c.idMov = x.idMov and x.fechaFactura >= '"+fechaProc+"'");
+			buffer.append(" and x.fechaFactura <= '"+fechaProc+"'");
+			buffer.append(" order by x.idMov ");
 			//
 			ps = conn.prepareStatement(buffer.toString());
+			System.out.println("   SQL   : "+buffer.toString());
+			/*
 			index++;
 			ps.setTimestamp(index, new Timestamp(toDate.getTime()));
 			index++;
 			ps.setTimestamp(index, new Timestamp(fromDate.getTime()));
+			*/
 			System.out.println("Consultando fechas desde: " + fromDate + " hasta: " + toDate);
 			rs = ps.executeQuery();
 			// arreglo para almacenar la lista de documentos electronicos auxiliares
 			ArrayList<TmpFactuDE_A> deList = new ArrayList<TmpFactuDE_A>();
-			while (rs.next()) {
+			
+			while (rs.next()) 
+			{
 				dataFound = true;
 				idMov = rs.getInt("idMov");
 				System.out.println("********* Transaccion: " + idMov);
@@ -163,7 +169,7 @@ public class RemisionElectronicaDAO {
 			buffer.append("select x.idConfig, x.iTipEmi, x.dDesTipEmi, x.dCodSeg,");
 			buffer.append(" x.dInfoEmi, x.dInfoFisc");
 			buffer.append(" from tmpFactuDE_B x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -213,7 +219,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.dPunExp, x.dNumDoc, x.dSerieNum, x.dFeIniT,");
 			buffer.append(" x.idConfig");
 			buffer.append(" from tmpFactuDE_C x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -275,7 +281,7 @@ public class RemisionElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dFeEmiDE");
 			buffer.append(" from tmpFactuDE_D x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -336,7 +342,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.dDesDepEmi, x.cDisEmi, x.dDesDisEmi, x.cCiuEmi,");
 			buffer.append(" x.dDesCiuEmi, x.dTelEmi, x.dEmailE, x.dDenSuc");
 			buffer.append(" from tmpFactuDE_D2 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -403,7 +409,7 @@ public class RemisionElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.cActEco, x.dDesActEco");
 			buffer.append(" from tmpFactuDE_D21 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -449,7 +455,7 @@ public class RemisionElectronicaDAO {
 			buffer.append("select x.idConfig, x.iTipIDRespDE, x.dDTipIDRespDE, x.dNumIDRespDE,");
 			buffer.append(" x.dNomRespDE, x.dCarRespDE");
 			buffer.append(" from tmpFactuDE_D22 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -503,7 +509,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.idConfig");
 
 			buffer.append(" from tmpFactuDE_D3 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -570,7 +576,7 @@ public class RemisionElectronicaDAO {
 			buffer.append("select x.idConfig, x.iMotEmiNR, x.dDesMotEmiNR, x.iRespEmiNR,");
 			buffer.append(" x.dDesRespEmiNR, x.dKmR, x.dFecEm");
 			buffer.append(" from tmpFactuDE_E6 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -621,7 +627,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.dDncpE, x.dDncpG, x.dGtin, x.dGtinPq,");
 			buffer.append(" x.dInfItem, x.dNCM, x.dParAranc, x.dPorQuiMer");
 			buffer.append(" from tmpFactuDE_E8 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -684,7 +690,7 @@ public class RemisionElectronicaDAO {
 			// datos de la cabecera de la transaccion 
 			buffer.append("select x.idConfig, x.dPUniProSer, x.dTiCamIt, x.dTotBruOpeItem");
 			buffer.append(" from tmpFactuDE_E81 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -730,7 +736,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.dNuDespImp, x.dIniTras, x.dFinTras, x.cPaisDest,");
 			buffer.append(" x.dDesPaisDest");
 			buffer.append(" from TmpFactuDE_E10 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -789,7 +795,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.cDepSal, x.dDesDepSal, x.cDisSal, x.dDesDisSal,");
 			buffer.append(" x.cCiuSal, x.dDesCiuSal, x.dTelSal");
 			buffer.append(" from TmpFactuDE_E101 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -846,7 +852,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.dComp2Ent, x.cDepEnt, x.dDesDepEnt, x.cDisEnt,");
 			buffer.append(" x.dDesDisEnt, x.cCiuEnt, x.dDesCiuEnt, x.dTelEnt");
 			buffer.append(" from TmpFactuDE_E102 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -902,7 +908,7 @@ public class RemisionElectronicaDAO {
 			buffer.append("select x.idConfig, x.dTiVehTras, x.dMarVeh, x.dTipIdenVeh,");
 			buffer.append(" x.dNroIDVeh, x.dAdicVeh, x.dNroMatVeh, x.dNroVuelo");
 			buffer.append(" from TmpFactuDE_E103 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -956,7 +962,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.dDomFisc, x.dDirChof, x.dNombAg, x.dRucAg,");
 			buffer.append(" x.dDVAg, x.dDirAge");
 			buffer.append(" from TmpFactuDE_E104 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -1016,7 +1022,7 @@ public class RemisionElectronicaDAO {
 			buffer.append(" x.cUniMedTotPes, x.dDesUniMedTotPes, x.dTotPesMerc, x.iCarCarga,");
 			buffer.append(" x.dDesCarCarga");
 			buffer.append(" from TmpFactuDE_G1 x");
-			buffer.append(" where x.idMov = ?");
+			buffer.append(" where x.idMov = ? and tipo=7");
 			//
 			ps = conn.prepareStatement(buffer.toString());
 			ps.setInt(1, idMov);
@@ -1051,6 +1057,18 @@ public class RemisionElectronicaDAO {
 			Util.closeResultSet(rs);
 			Util.closeStatement(ps);
 		}	
+	}
+	
+	
+	/**
+	* 
+	* @param toDate
+	* @return
+	*/
+	private static String DatetoString(java.util.Date toDate) 
+	{
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");  
+		return dateFormat.format(toDate);
 	}
 	
 }

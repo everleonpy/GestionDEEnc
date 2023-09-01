@@ -1,6 +1,8 @@
 package util;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -21,30 +23,57 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 /**
-*
+* Clase encargada gestionar el envio de correos
 * @author eleon
 */
 public class SendEmail {
     
-    private static final String SERVER_HOST = "smtp.hostinger.com"; //"mail.softpoint.com.py";
-    private static final String SERVER_PORT = "465";
-    private static final String SERVER_SSL = "true";
-    private static final String MAIL_FROM = "facturacion@elcacique.com.py"; // "eleon@softpoint.com.py"; 
+    private String SERVER_HOST = null; //"smtp.hostinger.com"; //"mail.softpoint.com.py";
+    private String SERVER_PORT = null; //"465";
+    private String SERVER_SSL = null;  //"true";
+    /* Datos de Cuenta*/
+    private String MAIL_FROM = null;   //"facturacion@elcacique.com.py"; // "eleon@softpoint.com.py"; 
+    private String MAIL_PASS = null;
     
     //---
     private Session session;
     private MimeMessage msg;
     
     
+    public SendEmail() 
+    {
+    	Properties propiedades = new Properties();
+        FileInputStream archivoPropiedades = null;
+        
+        try 
+        {
+			archivoPropiedades = new FileInputStream("app.properties");
+			propiedades.load(archivoPropiedades);
+			
+			SERVER_HOST=propiedades.getProperty("SERVER_HOST");
+			SERVER_PORT=propiedades.getProperty("SERVER_PORT");
+			SERVER_SSL=propiedades.getProperty("SERVER_SSL");
+			MAIL_FROM=propiedades.getProperty("MAIL_FROM");
+			MAIL_PASS=propiedades.getProperty("MAIL_PASS");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+    }
+    
+    
     /**
-    * 
-    * @param mailTo
-    * @param emialSubject
-    * @param emailBody
+    * Metodo encargado del envion del correo
+    * @param mailTo : Correo del destinatario
+    * @param emialSubject : Suject para el correo
+    * @param emailBody : El texto del cuerpo del correo
+    * @param atachment : Uri Path de los archivos que queremos adjuntar
     * @return String Status
     */
-    public String enviarEmail ( String mailTo, String emailSubject, String emailBody, List<String> atachment) {
-        
+    public String enviarEmail ( String mailTo, String emailSubject, String emailBody, List<String> atachment) 
+    {
+   
         Properties prop = System.getProperties();
         prop.put("mail.smtp.host", SERVER_HOST);
         prop.put("mail.smtp.port", SERVER_PORT);
@@ -57,12 +86,11 @@ public class SendEmail {
         
              protected PasswordAuthentication getPasswordAuthentication() 
              {
-                return new PasswordAuthentication(MAIL_FROM, "Fact2022ra*");
+                return new PasswordAuthentication(MAIL_FROM, MAIL_PASS);
              }
              
         });
-        
-        session.setDebug(true);
+        session.setDebug(false);
         
             try {
                 
@@ -88,7 +116,8 @@ public class SendEmail {
                         }
                     }
                     
-                    if ( emailBody != null ) {
+                    if ( emailBody != null ) 
+                    {
                         MimeBodyPart msgText = new MimeBodyPart();
                         msgText.setText(emailBody);
                         multipart.addBodyPart(msgText);

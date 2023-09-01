@@ -35,7 +35,8 @@ import util.UtilPOS;
 public class FacturaElectronicaDAO 
 {
 	
-	public static ArrayList<TmpFactuDE_A> getDEList ( java.util.Date trxDate ) {
+	public static ArrayList<TmpFactuDE_A> getDEList ( java.util.Date trxDate ) 
+	{
 		Connection conn =  null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
@@ -92,9 +93,10 @@ public class FacturaElectronicaDAO
 			//buffer.append(" and convert(varchar,tmp.fechaFactura,103)<=convert(varchar,?,103)");
 			buffer.append(" order by tmp.idMov");
 		
-			System.out.println("*************************************************************************");
+			/*System.out.println("*************************************************************************");
 			System.out.println("SQL : "+buffer.toString());
 			System.out.println("*************************************************************************");
+			*/
 			
 			//
 			ps = conn.prepareStatement(buffer.toString());

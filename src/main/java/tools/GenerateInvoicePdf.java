@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import com.google.zxing.WriterException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
@@ -18,7 +17,6 @@ import com.itextpdf.text.Document;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.pdf.PdfWriter;
-
 import business.AppConfig;
 import business.ApplicationMessage;
 import dao.PosCollectionItemsDAO;
@@ -38,7 +36,9 @@ import pojo.TicketFooter;
 import pojo.TicketHeader;
 import util.UtilPOS;
 
-public class GenerateInvoicePdf {
+
+public class GenerateInvoicePdf 
+{
 
 	long cashId;
 	long cashControlId;
@@ -268,6 +268,7 @@ public class GenerateInvoicePdf {
 			if (ticketHeader.getSecEconActivities() != null) {
 				if (ticketHeader.getSecEconActivities().size() > 0) {
 					task = "Activ. Secundarias";
+					@SuppressWarnings("rawtypes")
 					Iterator itr1 = ticketHeader.getSecEconActivities().iterator();
 					while (itr1.hasNext()) {
 						baseString = (String) itr1.next();
@@ -525,6 +526,7 @@ public class GenerateInvoicePdf {
 		ArrayList<PosInvoiceItemData> l = PosTransItemsDAO.listaPlana (transactionId, cashControlId, cashId, conn);
 		if (l != null) {
 			if (l.size() > 0) {
+				@SuppressWarnings("rawtypes")
 				Iterator itr = l.iterator();
 				while (itr.hasNext()) {
 					PosInvoiceItemData x = (PosInvoiceItemData) itr.next();
@@ -564,12 +566,14 @@ public class GenerateInvoicePdf {
 		String s, codProducto;
 		NumberFormat amountFmtr = NumberFormat.getNumberInstance(Locale.getDefault());
 		NumberFormat quantityFmtr = NumberFormat.getNumberInstance(Locale.getDefault());
+		@SuppressWarnings("unused")
 		DecimalFormat fmtr;
 		String task = "Inicio";
 
 		try {
 			quantityFmtr.setMinimumFractionDigits(4);
 			//
+			@SuppressWarnings("rawtypes")
 			Iterator itr = itemsList.iterator();
 			while (itr.hasNext()) {
 				TicketDetail d = (TicketDetail) itr.next();
@@ -619,6 +623,7 @@ public class GenerateInvoicePdf {
 	
 	public ApplicationMessage formatFooter () {
 		// preparar los datos para impresion de pie de ticket
+		@SuppressWarnings("unused")
 		long pointsQty  = 0;
 		Employee emp = null;
 		ApplicationMessage m = new ApplicationMessage();
@@ -721,7 +726,9 @@ public class GenerateInvoicePdf {
 		TicketCaption msgTicket;
 		ArrayList <TicketCaption> msg = new ArrayList <TicketCaption>();
 		//
+		@SuppressWarnings("unused")
 		String fv1;
+		@SuppressWarnings("unused")
 		int idx = -1;
 		//
 		String custLayout = "AMT-LAYOUT-1";
@@ -1443,6 +1450,7 @@ public class GenerateInvoicePdf {
 	}
 	
 	public static void main (String args[]) {
+		@SuppressWarnings("unused")
 		ApplicationMessage m;
 		try {
 			

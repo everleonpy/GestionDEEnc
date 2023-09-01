@@ -223,6 +223,7 @@ public class RemisionesUtils {
 		double dTotDescGlotem = 0.0;
 		double dTotGralOpe = 0.0;
 		double dTotOpe = 0.0;
+		@SuppressWarnings("unused")
 		double dTotCom = 0.0;
 		//
 		/*
@@ -233,6 +234,7 @@ public class RemisionesUtils {
          * 4 = Gravado parcial (Grav-Exento)
 		 */
 		CamposSubtotalesTotales gTotSub = new CamposSubtotalesTotales();
+		@SuppressWarnings("rawtypes")
 		Iterator i = items.iterator();
 		while (i.hasNext()) {
 			CamposItemsOperacion o = (CamposItemsOperacion) i.next();

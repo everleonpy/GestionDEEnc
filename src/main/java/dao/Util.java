@@ -6,14 +6,15 @@
  */
 package dao;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-//import org.apache.log4j.Logger;
+import java.util.Properties;
 
 /**
  * @author Owner
@@ -22,44 +23,72 @@ import java.sql.Statement;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class Util {
-	//private static Logger logger = Logger.getLogger(Util.class);
-
+	
+	private static String ipAddress = null;
+	private static String port = null;
+	private static String dbName = null;
+	private static Connection c = null;
+	private static String user = null;
+	private static String pass = null;
+	
 	public static Connection getConnection()  
 	{
-		//String ipAddress = "192.168.30.100";  // IP Jessy Lens
-		//String ipAddress = "192.168.1.190";    // IP Agro 
-		String ipAddress = "190.128.151.98";    // IP Agro Publica
-		String port = "1433";
-		//String dbName = "JessyLens"; 
-		String dbName = "agro"; 
-		
-		Connection c = null;
 		
 		try {
 			
-			String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName="+dbName;
+			InitParameters();
 			
-			/*String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName=JessyLens;"
-							   +"integratedSecurity=true;encrypt=false"; */
+			if( ipAddress != null ) 
+				{
+					String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName="+dbName;
+					
+					/*String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName=JessyLens;"
+									   +"integratedSecurity=true;encrypt=false"; */
+					System.out.println("DB Connection : "+connString);
+					Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+					c = DriverManager.getConnection(connString, user, pass);		
+					
+					return c;
+				}
 			
-			System.out.println("Connection string: " + connString);
-			
-			String user = "sa";
-			//String pass =  "Sqljessylens12345";   //JessyLens
-			String pass =  "Sqlseagro12345"; //Seagro
-			
-			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-			c = DriverManager.getConnection(connString, user, pass);		
-			
-			return c;
-			
+			return null;
 		} catch (Exception e) {
 			System.out.println( e.getClass().getName()+": "+ e.getMessage() );
-			//System.err.println( e.getClass().getName()+": "+ e.getMessage() );
 			return null;
 		}
 	}
+
 	
+	/**
+	* Metodo Encargado de cargar los parametros de conexion a la DB
+	*/
+	private static void InitParameters() 
+	{
+		Properties propiedades = new Properties();
+        FileInputStream archivoPropiedades = null;
+        
+        try {
+			archivoPropiedades = new FileInputStream("app.properties");
+			propiedades.load(archivoPropiedades);
+			
+			ipAddress = propiedades.getProperty("db.ip");
+			port = propiedades.getProperty("db.port");
+			dbName = propiedades.getProperty("db.name");
+			user = propiedades.getProperty("db.user");
+			pass = propiedades.getProperty("db.pass");
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+
+	/**
+	* 
+	* @param conn
+	*/
 	public static void closeJDBCConnection(final Connection conn)
 	{
 		if (conn != null)
@@ -70,7 +99,6 @@ public class Util {
 			 }
 			 catch (SQLException ex)
 			 {
-				//logger.error(conn, ex);
 				 System.out.println("Cierre conexion: " + ex.getMessage());
 			 }
 		}
@@ -86,7 +114,6 @@ public class Util {
 			 }
 			 catch (SQLException ex)
 			 {
-				//logger.error(stmt, ex);
 				 System.out.println("Cierre sentencia: " + ex.getMessage());
 			 }
 		}
@@ -102,7 +129,6 @@ public class Util {
 			 }
 			 catch (SQLException ex)
 			 {
-				//logger.error(stmt, ex);
 				 System.out.println("Cierre sentencia: " + ex.getMessage());
 			 }
 		}
@@ -118,7 +144,6 @@ public class Util {
 			 }
 			 catch (SQLException ex)
 			 {
-				//logger.error(rs, ex);
 				 System.out.println("Cierre resulset: " + ex.getMessage());
 			 }
 		}

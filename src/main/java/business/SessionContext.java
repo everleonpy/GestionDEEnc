@@ -3,13 +3,11 @@ package business;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-
-import dao.ApplicationUtilsDAO;
-import dao.InvOptionsDAO;
 import pojo.InvOptions;
 import business.ApplicationMessage;
 
-public class SessionContext {
+public class SessionContext 
+{
 	public static java.util.Date currentDate;
 	public static long currentSessionId;
 	public static long orgId;
@@ -32,6 +30,7 @@ public class SessionContext {
 	public static long eventSeqNumber;
 	// testing
 	//private static boolean testMode = true;
+	@SuppressWarnings("unused")
 	private static boolean testMode = false;
 
 	public static ApplicationMessage getContextValues () {
@@ -59,7 +58,8 @@ public class SessionContext {
 		}
 	}
 
-	public static void openLogFile () {
+	public static void openLogFile () 
+	{
 		java.util.Date currentDate = new java.util.Date();
 		SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
 		try {

@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-
 import dao.Util;
 import dao.ProblemaDatosException;
 import pojo.BusinessUnit;
@@ -14,13 +13,14 @@ import pojo.Organization;
 import pojo.Site;
 import pojo.FndUser;
 
-public class UserCredentialsDAO {
-	/**
-	 * @return User
-	 * @throws ProblemaDatosException
-	 * @throws Exception
-	 */
 
+public class UserCredentialsDAO 
+{
+	/**
+	* @return User
+	* @throws ProblemaDatosException
+	* @throws Exception
+	*/
 	public static FndUser getUser( String userName ) throws ProblemaDatosException, Exception {
 	    Connection conn =  null;
 	    PreparedStatement ps = null;
@@ -272,8 +272,10 @@ public class UserCredentialsDAO {
 	    PreparedStatement stmtConsulta = null;
 	    ResultSet rsConsulta = null;
 	    boolean dataFound = false;
-	    java.util.Date d = null;    
-	    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+	    @SuppressWarnings("unused")
+		java.util.Date d = null;    
+	    @SuppressWarnings("unused")
+		java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 	    try {
 	        StringBuffer buffer = new StringBuffer();
 

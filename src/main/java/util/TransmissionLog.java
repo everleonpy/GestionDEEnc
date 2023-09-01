@@ -3,7 +3,8 @@ package util;
 import java.util.Arrays;
 
 
-public enum TransmissionLog {
+public enum TransmissionLog 
+{
     ENVIO_TRANSACCION((short) 1, "Envio Transaccion a Sifen"),
     GENERACION_KUDE((short) 2, "Envio KuDE al receptor"),
     GENERACION_XML((short) 3, "Envio KuDE al receptor"),

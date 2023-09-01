@@ -80,6 +80,13 @@
 		   <version>2.9.0</version>
 		</dependency>
 		
+		<!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
+		<dependency>
+		    <groupId>com.sun.mail</groupId>
+		    <artifactId>javax.mail</artifactId>
+		    <version>1.6.2</version>
+		</dependency>
+		
 	    <!-- Jersey core Servlet 2.x implementation -->
 	    <dependency>
 	        <groupId>org.glassfish.jersey.containers</groupId>
@@ -140,7 +147,6 @@
 	        
         </plugins>
     </build>
-    
     
 </project>
 

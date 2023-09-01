@@ -1,21 +1,15 @@
 package test;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 import java.util.logging.Logger;
-
 import com.roshka.sifen.Sifen;
 import com.roshka.sifen.core.SifenConfig;
 import com.roshka.sifen.core.beans.response.RespuestaConsultaDE;
 import com.roshka.sifen.core.exceptions.SifenException;
 
-import dao.RcvTrxEbBatchItemsDAO;
-import dto.RcvTrxEbBatchItemDTO;
-
 public class ConsultaCDC {
 	
+	@SuppressWarnings("unused")
 	private final static Logger logger = Logger.getLogger(ConsultaCDC.class.toString());
 
 	public static void main(String[] args) throws SifenException, ParseException 
