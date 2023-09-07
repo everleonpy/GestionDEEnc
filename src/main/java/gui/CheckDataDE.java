@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 
-public class CheckDataDE extends JFrame {
+public class CheckDataDE extends JFrame 
+{
 
 	
 	private static final long serialVersionUID = 1L;

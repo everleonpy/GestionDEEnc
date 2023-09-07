@@ -1,8 +1,8 @@
 package util;
 
-
-
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.roshka.sifen.Sifen;
+import com.roshka.sifen.addon.Envelope;
 import com.roshka.sifen.core.SifenConfig;
 import com.roshka.sifen.core.beans.EventosDE;
 import com.roshka.sifen.core.beans.response.RespuestaConsultaDE;
@@ -51,7 +51,7 @@ public class CheckStatusDETools
 	/**
 	* 
 	* @param nroLote
-	* @return
+	* @return String
 	* @throws SifenException
 	* @throws ParserConfigurationException 
 	* @throws SAXException 
@@ -60,10 +60,29 @@ public class CheckStatusDETools
 	public String checkLote(String nroLote) throws SifenException, IOException, SAXException, ParserConfigurationException 
 	{
 		RespuestaConsultaLoteDE resp = Sifen.consultaLoteDE(nroLote);
+		
 		if( resp.getRespuestaBruta() != null ) 
 		{
-			String xml = resp.getRespuestaBruta();
-			return format(xml, true);
+				//String xml = resp.getRespuestaBruta();
+				//return format(xml, true);
+				//System.out.println("RESPUESTA : "+xml);
+				
+				XmlMapper xmlMapper = new XmlMapper();
+				Envelope tmp = xmlMapper.readValue(resp.getRespuestaBruta(),Envelope.class);
+				StringBuilder str =  new StringBuilder();
+				
+				if( tmp.getBody().getrResEnviConsLoteDe() != null) {
+					str.append(" ** Nro de Lote : "+nroLote+" \n");
+				    str.append("*--------------------------------------------------------------------\n");
+				    str.append("| Codigo de Respuesta  : "+tmp.getBody().getrResEnviConsLoteDe()
+				    										.dCodResLot+"\n");
+				    str.append("| Mensaje              : "+tmp.getBody().getrResEnviConsLoteDe()
+				    										.getdMsgResLot()+"\n");
+				    str.append("*--------------------------------------------------------------------\n");
+				}
+		     
+		     return str.toString();
+			
 		}
 		return "*** No hay respuesta desde el SIFEN ****";
 	}
@@ -80,7 +99,8 @@ public class CheckStatusDETools
 	* @throws IOException 
 	* @throws SifenException 
 	*/
-	public String eventoCancelacion(String cdc, String msgCancelacion, String idEvento) throws IOException, SAXException, ParserConfigurationException, SifenException 
+	public String eventoCancelacion(String cdc, String msgCancelacion, String idEvento) 
+									throws IOException, SAXException, ParserConfigurationException, SifenException 
 	{
 		LocalDateTime currentDate = LocalDateTime.now();
 		 // Evento de Cancelación
@@ -103,8 +123,23 @@ public class CheckStatusDETools
         
         if( resp.getRespuestaBruta() != null ) 
         {
-        	String xml = resp.getRespuestaBruta();
-        	return format(xml, true);
+        	//String xml = resp.getRespuestaBruta();
+        	//return format(xml, true);
+        	
+        	XmlMapper xmlMapper = new XmlMapper();
+			Envelope tmp = xmlMapper.readValue(resp.getRespuestaBruta(),Envelope.class);
+			
+			StringBuilder str =  new StringBuilder();
+			str.append(" ** Nro de CDC : "+cdc+" \n");
+		    str.append("*--------------------------------------------------------------------\n");
+		    str.append("| Codigo de Respuesta  : "+tmp.getBody().getrRetEnviDe().getrProtDe()
+		    										.getgResProc().getdCodRes()+"\n");
+		    str.append("| Estado Evento        : "+tmp.getBody().getrRetEnviDe().getrProtDe()
+					.getdEstRes()+"\n");
+		    str.append("| Mensaje              : "+tmp.getBody().getrRetEnviDe().getrProtDe()
+		    										.getgResProc().getdMsgRes()+"\n");
+		    str.append("*--------------------------------------------------------------------\n");
+		    return str.toString();
         }
         
         return "*** No hay respuesta desde el SIFEN ****";
@@ -115,10 +150,10 @@ public class CheckStatusDETools
 	* 
 	* @param cdc
 	* @return
-	 * @throws SifenException 
-	 * @throws ParserConfigurationException 
-	 * @throws SAXException 
-	 * @throws IOException 
+	* @throws SifenException 
+	* @throws ParserConfigurationException 
+	* @throws SAXException 
+	* @throws IOException 
 	*/
 	public String checkCDC(String cdc) throws SifenException, IOException, SAXException, ParserConfigurationException 
 	{
@@ -126,8 +161,20 @@ public class CheckStatusDETools
 		
 		if(resp.getRespuestaBruta() != null ) 
 		{
-			String xml = resp.getRespuestaBruta();
-			return format(xml, true);
+			//String xml = resp.getRespuestaBruta();
+			//return format(xml, true);
+			XmlMapper xmlMapper = new XmlMapper();
+			Envelope tmp = xmlMapper.readValue(resp.getRespuestaBruta(),Envelope.class);
+			
+			StringBuilder str =  new StringBuilder();
+			str.append(" ** Nro de CDC : "+cdc+" \n");
+		    str.append("*--------------------------------------------------------------------\n");
+		    str.append("| Codigo de Respuesta  : "+tmp.getBody().getrRetEnviDe().getrProtDe()
+		    										.getgResProc().getdCodRes()+"\n");
+		    str.append("| Mensaje              : "+tmp.getBody().getrRetEnviDe().getrProtDe()
+		    										.getgResProc().getdMsgRes()+"\n");
+		    str.append("*--------------------------------------------------------------------\n");
+	     
 		}
 		
 		return "*** No hay respuesta desde el SIFEN ****";
@@ -139,36 +186,39 @@ public class CheckStatusDETools
 	* Metodo encargado de Verificar el status de una FE via WS y actulizar la cabezera 
 	* @param date
 	* @return
-	 * @throws SifenException 
+	* @throws SifenException 
 	*/
 	public String checkCDCtoDate(String date) throws SifenException 
 	{
-		
-		Date dateProc = DateTools.getDate(date, null);
-		StringBuilder strResp = new StringBuilder();
-
-		if( dateProc != null ) 
+		if( date.length() > 0 ) 
 		{
-			/* Obtenemos la lista de los CDCs que no estan en estado Aprobado*/
-			List<String> listaCDCs = TmpFactuDE_ADTO.obtenrCDCs(dateProc);
-			if( listaCDCs != null ) 
-			{
-				
-				for (String cdc : listaCDCs) 
-				{
-					RespuestaConsultaDE resp = Sifen.consultaDE(cdc.trim());
-					if( resp.getdMsgRes().trim().equalsIgnoreCase("CDC encontrado") ) 
-					{
-						strResp.append("CDC  Encontrado : "+cdc+"\n");
-						TmpFactuDE_ADTO.updateStatus(cdc);
-					}
-				}
-			}
-			return strResp.toString();
-			
-		}
+			Date dateProc = DateTools.getDate(date, null);
+			StringBuilder strResp = new StringBuilder();
 		
-		return "FORMATE DE FECHA INCORRECTO ...";
+				if( dateProc != null ) 
+				{
+					/* Obtenemos la lista de los CDCs que no estan en estado Aprobado*/
+					List<String> listaCDCs = TmpFactuDE_ADTO.obtenrCDCs(dateProc);
+					if( listaCDCs != null ) 
+					{
+						
+						for (String cdc : listaCDCs) 
+						{
+							RespuestaConsultaDE resp = Sifen.consultaDE(cdc.trim());
+							if( resp.getdMsgRes().trim().equalsIgnoreCase("CDC encontrado") ) 
+							{
+								strResp.append("CDC  Encontrado : "+cdc+"\n");
+								TmpFactuDE_ADTO.updateStatus(cdc);
+							}
+						}
+					}
+					return strResp.toString();
+					
+				}
+			
+			return "FORMATO DE FECHA INCORRECTO ...";
+		}
+		return "INGRESE UNA FECHA VALIDA";
 		
 	}
 	
@@ -209,6 +259,7 @@ public class CheckStatusDETools
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 */
+	@SuppressWarnings("unused")
 	private static String format(String xml, Boolean ommitXmlDeclaration)
 			throws IOException, SAXException, ParserConfigurationException 
 	{

@@ -1,5 +1,7 @@
 package dto;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import dao.Util;
 
@@ -64,13 +68,12 @@ public class TmpFactuDE_ADTO
 					}
 					
 					
-				} catch (SQLException e) {
-					System.err.println("*** [ ERROR ] *************************************************");
-					System.err.println("* "+e.getMessage());
-					System.err.println("* "+e.getErrorCode());
-					System.err.println("* "+e.getLocalizedMessage());
-					System.err.println("***************************************************************");
-					e.printStackTrace();
+				} catch (Exception e) {
+					StringWriter sw = new StringWriter();
+			        e.printStackTrace(new PrintWriter(sw));
+					JOptionPane.showMessageDialog(null, sw.toString(), " [ ERROR ] ", 
+														JOptionPane.ERROR_MESSAGE);
+					//e.printStackTrace();
 					
 				} finally { 
 					

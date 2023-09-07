@@ -129,8 +129,9 @@
 		          </descriptorRefs>
 		          <archive>
 		              <manifest>
-		                <mainClass>business.LogonWindowLauncher</mainClass>
+		                <!--mainClass>business.LogonWindowLauncher</mainClass -->
 		               <!-- mainClass>gui.CheckDataDE</mainClass -->
+		               <mainClass>py.com.softpoint.guis.MainMenu</mainClass>
 		              </manifest>
 		          </archive>
 		      </configuration>

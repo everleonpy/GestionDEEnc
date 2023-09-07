@@ -16,13 +16,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
+import javax.swing.JOptionPane;
+
+import util.StringTools;
+
 /**
- * @author Owner
- *
- * To change the template for this generated type comment go to
- * Window>Preferences>Java>Code Generation>Code and Comments
- */
-public class Util {
+* @author Owner
+*
+*/
+public class Util 
+{
 	
 	private static String ipAddress = null;
 	private static String port = null;
@@ -44,6 +47,7 @@ public class Util {
 					
 					/*String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName=JessyLens;"
 									   +"integratedSecurity=true;encrypt=false"; */
+					
 					System.out.println("DB Connection : "+connString);
 					Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 					c = DriverManager.getConnection(connString, user, pass);		
@@ -52,8 +56,21 @@ public class Util {
 				}
 			
 			return null;
-		} catch (Exception e) {
-			System.out.println( e.getClass().getName()+": "+ e.getMessage() );
+		} catch (Exception e) 
+		{
+		
+			/*StringWriter sw = new StringWriter();
+	        e.printStackTrace(new PrintWriter(sw));
+			JOptionPane.showMessageDialog(null, sw.toString(), " [ ERROR ] ", 
+												JOptionPane.ERROR_MESSAGE);*/
+			StringBuilder sbEx = new StringBuilder();
+			sbEx.append(e.getClass().getName()+"\n");
+			sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
+			
+			JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
+					JOptionPane.ERROR_MESSAGE);
+			
+			//System.out.println( e.getClass().getName()+": "+ e.getMessage() );
 			return null;
 		}
 	}
@@ -78,7 +95,13 @@ public class Util {
 			pass = propiedades.getProperty("db.pass");
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			
+			StringBuilder sbEx = new StringBuilder();
+			sbEx.append(e.getClass().getName()+"\n");
+			sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
+			
+			JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
+					JOptionPane.ERROR_MESSAGE);
 		}
 		
 		
@@ -97,9 +120,14 @@ public class Util {
 			 {
 				conn.close();
 			 }
-			 catch (SQLException ex)
+			 catch (SQLException e)
 			 {
-				 System.out.println("Cierre conexion: " + ex.getMessage());
+				    StringBuilder sbEx = new StringBuilder();
+					sbEx.append(e.getClass().getName()+"\n");
+					sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
+					
+					JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
+							JOptionPane.ERROR_MESSAGE);
 			 }
 		}
 	}
@@ -112,9 +140,14 @@ public class Util {
 			 {
 				stmt.close();
 			 }
-			 catch (SQLException ex)
+			 catch (SQLException e)
 			 {
-				 System.out.println("Cierre sentencia: " + ex.getMessage());
+				StringBuilder sbEx = new StringBuilder();
+				sbEx.append(e.getClass().getName()+"\n");
+				sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
+					
+				JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
+							JOptionPane.ERROR_MESSAGE);
 			 }
 		}
 	}
@@ -127,9 +160,14 @@ public class Util {
 			 {
 				stmt.close();
 			 }
-			 catch (SQLException ex)
+			 catch (SQLException e)
 			 {
-				 System.out.println("Cierre sentencia: " + ex.getMessage());
+				StringBuilder sbEx = new StringBuilder();
+				sbEx.append(e.getClass().getName()+"\n");
+				sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
+						
+					JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
+								JOptionPane.ERROR_MESSAGE);
 			 }
 		}
 	}
@@ -142,9 +180,14 @@ public class Util {
 			 {
 				rs.close();
 			 }
-			 catch (SQLException ex)
+			 catch (SQLException e)
 			 {
-				 System.out.println("Cierre resulset: " + ex.getMessage());
+				StringBuilder sbEx = new StringBuilder();
+				sbEx.append(e.getClass().getName()+"\n");
+				sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
+					
+				JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
+								JOptionPane.ERROR_MESSAGE);
 			 }
 		}
 	}
