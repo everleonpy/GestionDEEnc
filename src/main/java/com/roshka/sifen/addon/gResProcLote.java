@@ -2,14 +2,16 @@ package com.roshka.sifen.addon;
 
 import java.io.Serializable;
 
+
+@SuppressWarnings("serial")
 public class gResProcLote implements Serializable
 {
 
-    private String id;
+	private String id;
     private String dEstRes;
     private int dProtAut;
     private gResProc gResProc;
-
+    
     public String getId() {
         return id;
     }

@@ -41,9 +41,11 @@ public class MainMenu extends JFrame
 			
 				EventQueue.invokeLater(new Runnable() {
 					public void run() {
-						try {
-							MainMenu frame = new MainMenu();
+						try 
+						{
+							MainMenu frame = new MainMenu(pFile);
 							frame.setVisible(true);
+
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -59,15 +61,17 @@ public class MainMenu extends JFrame
 	* Create the frame.
 	 * @throws IOException 
 	*/
-	public MainMenu() throws IOException 
+	@SuppressWarnings("static-access")
+	public MainMenu(String pFile) throws IOException 
 	{
 		this.setContentPane(fondo);
+		this.pFile = pFile;
 		
 		instancia = this;
 		imgTools = new ImageTools();
 		setTitle("Menu Principal");
 		setResizable(false);
-		setAlwaysOnTop(true);
+		setAlwaysOnTop(false);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setBounds(100, 100, 800, 600);
 		contentPane = new FondoSP();
@@ -87,7 +91,6 @@ public class MainMenu extends JFrame
 		mnDocElectronicos.setIcon(new ImageIcon(imgTools.getImageFromFile("document.png")));
 		menuBarDE.add(mnDocElectronicos);
 		
-		
 		JMenuItem mntmConsultarRuc = new JMenuItem("Consultar RUC");
 		mntmConsultarRuc.setIcon(new ImageIcon(imgTools.getImageFromFile("icons/identity.png")));
 		mntmConsultarRuc.addActionListener(new ActionListener() 
@@ -98,7 +101,7 @@ public class MainMenu extends JFrame
 					public void run() {
 						try 
 						{
-							ConsultaRUC consultaRUC = new ConsultaRUC(pFile, instancia);
+							ConsultaRUC consultaRUC = new ConsultaRUC("test.properties", instancia);
 							consultaRUC.setVisible(true);
 						} catch (Exception e) {
 							e.printStackTrace();

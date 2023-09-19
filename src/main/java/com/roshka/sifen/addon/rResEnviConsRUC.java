@@ -1,6 +1,10 @@
 package com.roshka.sifen.addon;
 
-public class rResEnviConsRUC {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class rResEnviConsRUC implements Serializable 
+{
 	private int dCodRes;
 	private String dMsgRes;
 	private rContRUC xContRUC;

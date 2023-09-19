@@ -1,6 +1,11 @@
 package com.roshka.sifen.addon;
 
-public class Body { 
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Body implements Serializable 
+{ 
+	
     public rRetEnviDe rRetEnviDe;
     public rResEnviConsRUC rResEnviConsRUC;
     public rResEnviConsLoteDe rResEnviConsLoteDe;

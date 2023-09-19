@@ -48,7 +48,7 @@ public class Util
 					/*String connString = "jdbc:sqlserver://" + ipAddress + ":" + port + ";DatabaseName=JessyLens;"
 									   +"integratedSecurity=true;encrypt=false"; */
 					
-					System.out.println("DB Connection : "+connString);
+					//System.out.println("DB Connection : "+connString);
 					Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
 					c = DriverManager.getConnection(connString, user, pass);		
 					
@@ -63,14 +63,13 @@ public class Util
 	        e.printStackTrace(new PrintWriter(sw));
 			JOptionPane.showMessageDialog(null, sw.toString(), " [ ERROR ] ", 
 												JOptionPane.ERROR_MESSAGE);*/
+			
 			StringBuilder sbEx = new StringBuilder();
 			sbEx.append(e.getClass().getName()+"\n");
 			sbEx.append(StringTools.cortarString(e.getMessage(), 80) );
 			
 			JOptionPane.showMessageDialog(null, sbEx.toString(), " [ ERROR ] ", 
 					JOptionPane.ERROR_MESSAGE);
-			
-			//System.out.println( e.getClass().getName()+": "+ e.getMessage() );
 			return null;
 		}
 	}

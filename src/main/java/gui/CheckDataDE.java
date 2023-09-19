@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import com.roshka.sifen.core.exceptions.SifenException;
@@ -98,6 +99,9 @@ public class CheckDataDE extends JFrame
 					txtResponse.setText(statusTools.checkLote(txtInput.getText().trim()));
 					
 				} catch (SifenException | IOException | SAXException | ParserConfigurationException e1) {
+					e1.printStackTrace();
+				} catch (JAXBException e1) {
+					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}

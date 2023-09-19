@@ -1,4 +1,4 @@
-package sifen;
+package py.com.softpoint.sends;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -9,21 +9,17 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.roshka.sifen.Sifen;
 import com.roshka.sifen.addon.Envelope;
-import com.roshka.sifen.addon.gResProcLote;
-import com.roshka.sifen.addon.rResEnviConsLoteDe;
 import com.roshka.sifen.core.SifenConfig;
 import com.roshka.sifen.core.beans.DocumentoElectronico;
-import com.roshka.sifen.core.beans.response.RespuestaConsultaDE;
-import com.roshka.sifen.core.beans.response.RespuestaConsultaLoteDE;
 import com.roshka.sifen.core.beans.response.RespuestaRecepcionLoteDE;
 import com.roshka.sifen.core.exceptions.SifenException;
 import com.roshka.sifen.core.fields.request.de.TdDatGralOpe;
@@ -68,14 +64,10 @@ import com.roshka.sifen.core.types.TiTiOpe;
 import com.roshka.sifen.core.types.TiTiPago;
 import com.roshka.sifen.core.types.TiTipCont;
 import com.roshka.sifen.core.types.TiTipDocRec;
-
-import business.ApplicationMessage;
-import business.UserAttributes;
 import dao.FacturaElectronicaDAO;
 import dao.RcvTrxEbBatchItemsDAO;
 import dao.RcvTrxEbBatchesDAO;
 import dao.Util;
-import dao.UtilitiesDAO;
 import nider.TmpFactuDE_A;
 import nider.TmpFactuDE_C;
 import nider.TmpFactuDE_D1;
@@ -89,68 +81,77 @@ import nider.TmpFactuDE_E72;
 import nider.TmpFactuDE_E721;
 import nider.TmpFactuDE_E8;
 import nider.TmpFactuDE_E811;
-import pojo.CamposActivEconomica;
 import pojo.RcvInvoice;
 import pojo.RcvTrxEbBatch;
 import pojo.RcvTrxEbBatchItem;
-import util.UtilPOS;
+import py.com.softpoint.context.ContextDataApp;
+import util.MsgApp;
 
-public class SendRcvInvoicesAsync {
-
-	private final static Logger logger = Logger.getLogger(SendRcvInvoicesAsync.class.toString());
-
-	public static void setupSifenConfig() throws SifenException {
-		SifenConfig sifenConfig = SifenConfig.cargarConfiguracion("test.properties");
-		logger.info("Using CONFIG: " + sifenConfig);
-		Sifen.setSifenConfig(sifenConfig);
-	}
-
-	public ApplicationMessage sendDeBatch ( String trxType, 
-			                                java.util.Date trxDate,
-			                                long orgId, 
-			                                long unitId, 
-			                                String userName ) throws SifenException {
-		ApplicationMessage am = null;
-		Connection conn;
-
-		int rowsQty = 50;
-
-		String fileName;
-		boolean fileCreated;
-		int groupCounter = 0;
-		int allSent = 0;
-		int allFailed = 0;
-		boolean dataFound = false;
-		
-		// establecer la configuracion Sifen
-		try {
-			setupSifenConfig();
-		} catch ( SifenException e1 ) {
-			am = new ApplicationMessage();
-			am.setMessage("SEND-INV", "No se ha podido establecer la configuracion Sifen", ApplicationMessage.ERROR);
-			return am;
-		} catch ( Exception e2 ) {
-			am = new ApplicationMessage();
-			am.setMessage("SEND-INV", "Configuracion Sifen: " + e2.getMessage(), ApplicationMessage.ERROR);    	    	
-			return am;
+/**
+* Clase Encargada del envio de Facturas Electronicas al SIFEN
+* @author eleon
+*
+*/
+public class EnvioFacturaElectronica 
+{
+	private SifenConfig sifenConfig = null;
+	private Connection conn = null;
+	private MsgApp msgApp = null;
+	
+	private int rowsQty = 50;
+	private int groupCounter = 0;
+	private String fileName;
+	private boolean fileCreated;
+	private int allSent = 0;
+	private int allFailed = 0;
+	
+	
+	/**
+	* El constructor recibe como parametro el archivo properties que define configuraciones basicas de entorno
+	* @param pFileProp
+	* @throws SifenException
+	*/
+	public EnvioFacturaElectronica(String pFileProp) throws SifenException 
+	{
+		if( pFileProp != null ) 
+		{
+			sifenConfig = SifenConfig.cargarConfiguracion(pFileProp);
+			Sifen.setSifenConfig(sifenConfig);
+			
 		}
-
+	}
+	
+	
+	/**
+	* 
+	* @param trxDate
+	* @param trxType
+	* @return
+	*/
+	public MsgApp enviarLotes(Date trxDate, String trxType) 
+	{
+	
 		// obtener una conexion a la base de datos
 		conn = Util.getConnection();
-		if (conn == null) {
-			am = new ApplicationMessage();
-			am.setMessage("SEND-INV", "No se ha podido obtener conexion a la base de datos", ApplicationMessage.ERROR);
-			return am;
+		if( conn == null ) 
+		{
+			 msgApp = new MsgApp();
+			 msgApp.ErrorMessage("No hay conexion a la BASE DE DATOS");
+			 return msgApp;
 		}
-
+		
+		/* Lista de DE a enviar */
 		ArrayList<DocumentoElectronico> deList = null;
+		/* Lista de DE enviados */
 		ArrayList<RcvInvoice> sentList = null;
+		
 		/**
 		 +---------------------------------------------------------------------+
 		 | procesar los lotes cuyo numero esta comprendido entre groupFrom y   |
 		 | groupTo                                                             |
 		 +---------------------------------------------------------------------+		 
 		*/
+		
 		try {
 		    // Arreglo para guardar la lista de documentos auxiliares provenientes del
 		    // sistema emisor
@@ -159,7 +160,7 @@ public class SendRcvInvoicesAsync {
 		    ArrayList<TmpFactuDE_A> daList = FacturaElectronicaDAO.getDEList(trxDate);
 		    if (daList != null) 
 		    {
-		    	    dataFound = true;
+		    	//dataFound = true;
 		        Iterator itr1 = daList.iterator();
 		        while (itr1.hasNext()) {
 		        	
@@ -178,22 +179,27 @@ public class SendRcvInvoicesAsync {
 				        if (DE.getId() != null) {
 					        System.out.println("Registrando documento electronico: " + x.getIdMov() + " - " + DE.getId());
 					        deList.add(DE);
+					        
 					        //fileName = "/Users/jota_ce/Documents/jl-sifen/xml/facturas/" + 
 						    //           String.valueOf(x.getIdMov()) + ".xml";
+					        
 					        fileName = "c:/xml/rcv/" + 
 					        		String.valueOf(x.getIdMov()) + ".xml";
-					        try {
+					        
+					        try 
+					        {
 						        fileCreated = DE.generarXml(fileName);
 					        } catch ( Exception e) {
 						        e.printStackTrace();
 					        }
+					        
 					        // agregar a la lista de transacciones cuyo DE fue generado y podran ser enviadas
 					        RcvInvoice sentTx = new RcvInvoice();
 					        sentTx.setInvoiceId(x.getIdMov());
 					        sentTx.setControlCode(DE.getId());
 					        sentTx.setQrCode(DE.getEnlaceQR());
-					        sentTx.setOrgId(orgId);
-					        sentTx.setUnitId(unitId);
+							sentTx.setOrgId(ContextDataApp.getDataContext().getOrgId());
+							sentTx.setUnitId(ContextDataApp.getDataContext().getUnitId());
 					        sentList.add(sentTx);
 					        allSent++;
 				        } else {
@@ -201,42 +207,69 @@ public class SendRcvInvoicesAsync {
 					        System.out.println("No se pudo generar el CDC para: " + x.getIdMov() );							
 				        }
 		    	            groupCounter++;
-		    	            if (groupCounter == rowsQty) {
+		    	            
+		    	            if (groupCounter == rowsQty) 
+		    	            {
 		    	        	        // ejecutar la llamada al servicio de envio de datos por lote
-		    	        	        sendBatch ( deList, sentList, trxType, trxDate, orgId, unitId, userName, conn );
-						    groupCounter = 0;		    	        	
+		    	            	    //sendBatch ( deList, sentList, trxType, trxDate, orgId, unitId, userName, conn );
+		    	            	
+			    	            	sendBatch ( deList, sentList, trxType, trxDate, ContextDataApp.getDataContext().getOrgId(), 
+			    	            			ContextDataApp.getDataContext().getUnitId(),ContextDataApp.getDataContext().getUsuario()
+			    	            			, conn );
+		    	            	
+		    	        	        groupCounter = 0;		    	        	
 		    	            }
 			        }
 		        }
-    	            // ejecutar la llamada al servicio de envio de datos para el ultimo lote
-    	            sendBatch ( deList, sentList, trxType, trxDate, orgId, unitId, userName, conn );
+   	            // ejecutar la llamada al servicio de envio de datos para el ultimo lotetrxType
+   	            //sendBatch ( deList, sentList, trxType, trxDate, orgId, unitId, userName, conn );
+		        sendBatch ( deList, sentList, trxType, trxDate, ContextDataApp.getDataContext().getOrgId(), 
+            			ContextDataApp.getDataContext().getUnitId(),ContextDataApp.getDataContext().getUsuario()
+            			, conn );
+		        
 		    }
-			am = new ApplicationMessage();
+		    
+		    // TODO aca se envia un mensaje a la gui....
+			/*am = new ApplicationMessage();
 			if (dataFound == true) {
 			    String res = "Actividad realizada con exito. Enviados con exito: " + allSent + " No enviados: " + allFailed; 
 			    am.setMessage("SEND-BATCH", res, ApplicationMessage.MESSAGE);
 			} else {
 			    am.setMessage("SEND-BATCH", "No se encontraron transacciones para enviar", ApplicationMessage.ERROR);				
 			}
-			return am;
+			return am;  */
+		    msgApp.InfoMessage("Actividad realizada con exito. Enviados con exito: " + allSent + " No enviados: " + allFailed );
+		    return null;
+		    
 		} catch (Exception e) {
 			e.printStackTrace();
-			am = new ApplicationMessage();
+			/*am = new ApmsgplicationMessage();
 			am.setMessage("SEND-BATCH", e.getMessage(), ApplicationMessage.ERROR);
-			return am;
+			return am;*/
+			msgApp.ErrorMessage(e);
 		} finally {
 			Util.closeJDBCConnection(conn);
 		}
+		
+		return null;
 	}
+
+
 	
-	private void sendBatch ( ArrayList<DocumentoElectronico> deList,
-			                 ArrayList<RcvInvoice> sentList,
-			                 String trxType, 
-			                 java.util.Date trxDate,
-			                 long orgId, 
-			                 long unitId, 
-			                 String userName, 
-			                 Connection conn ) {
+	/**
+	* 
+	* @param deList
+	* @param sentList
+	* @param trxType
+	* @param trxDate
+	* @param orgId
+	* @param unitId
+	* @param userName
+	* @param conn
+	*/
+	private void sendBatch(ArrayList<DocumentoElectronico> deList, ArrayList<RcvInvoice> sentList, String trxType,
+		java.util.Date trxDate, long orgId, long unitId, String userName, Connection conn) 
+	{
 		boolean sendOk = false;
 		RespuestaRecepcionLoteDE ret = null;
 		int respCode = 0;
@@ -251,57 +284,55 @@ public class SendRcvInvoicesAsync {
 			sendOk = true;
 			System.out.println("Enviando lote...");
 			ret = Sifen.recepcionLoteDE(deList);
-			logger.info(ret.toString());
-			logger.info("CODIGO DE ESTADO: " + ret.getCodigoEstado());
-			logger.info("COD RESP........: " + ret.getdCodRes());
-			logger.info("MSG RESP........: " + ret.getdMsgRes());
-			logger.info("RESPUESTA BRUTA.: " + ret.getRespuestaBruta());
-
 			System.out.println(ret.toString());
+			
 			System.out.println("CODIGO DE ESTADO: " + ret.getCodigoEstado());
 			System.out.println("COD RESP........: " + ret.getdCodRes());
 			System.out.println("MSG RESP........: " + ret.getdMsgRes());
 			System.out.println("XML.............: ");
 			System.out.println(ret.getRespuestaBruta());
+			
 		} catch (Exception e1) {
 			sendOk = false;
-			e1.printStackTrace(); 
+			e1.printStackTrace();
 		}
 		/**
-		 * Si tuvo exito el envio del lote, en este punto crear el lote y asignarlo
-		 * a las transacciones procesadas.
+		 * Si tuvo exito el envio del lote, en este punto crear el lote y asignarlo a
+		 * las transacciones procesadas.
 		 */
-		if ( sendOk == true) {
+		if (sendOk == true) {
 			respCode = -1;
 			JacksonXmlModule module = new JacksonXmlModule();
 			module.setDefaultUseWrapper(false);
-			// XmlMapper xmlMapper = new XmlMapper(module);
 			XmlMapper xmlMapper = new XmlMapper(module);
+			
 			try {
-				Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(),Envelope.class);
+				Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(), Envelope.class);
 				respCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
 				batchNo = tmp.getBody().getrResEnviLoteDe().getdProtConsLote();
 				batchDate = tmp.getBody().getrResEnviLoteDe().getdFecProc();
 				resultCode = tmp.getBody().getrResEnviLoteDe().dCodRes;
 				resultMsg = tmp.getBody().getrResEnviLoteDe().getdMsgRes();
 				processTime = tmp.getBody().getrResEnviLoteDe().getdTpoProces();
-				System.out.println("=============================== CONSULTA DE LOTES =====================================");
+				System.out.println(
+						"=============================== CONSULTA DE LOTES =====================================");
 				System.out.println("Codigo Resultado.: " + tmp.getBody().getrResEnviLoteDe().dCodRes);
 				System.out.println("Mensaje Resultado: " + tmp.getBody().getrResEnviLoteDe().getdMsgRes());
 				System.out.println("Numero de Lote...: " + tmp.getBody().getrResEnviLoteDe().getdProtConsLote());
 				System.out.println("Tiempo Proc......: " + tmp.getBody().getrResEnviLoteDe().getdTpoProces());
 				System.out.println("Fec/Hora Recep...: " + tmp.getBody().getrResEnviLoteDe().getdFecProc());
-				System.out.println("=============================== CONSULTA DE LOTES =====================================");
+				System.out.println(
+						"=============================== CONSULTA DE LOTES =====================================");
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
-			} 	
+			}
 			if (respCode == 300) {
 				try {
 					long batchId = 0;
 					// crear una entrada en la tabla de lotes enviados
 					RcvTrxEbBatch batch = new RcvTrxEbBatch();
-					//long batchId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCHES");
-					//batch.setIdentifier(batchId);
+					// long batchId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCHES");
+					// batch.setIdentifier(batchId);
 					batch.setBatchNumber(batchNo);
 					batch.setTrxType(trxType);
 					batch.setTrxDate(trxDate);
@@ -322,8 +353,9 @@ public class SendRcvInvoicesAsync {
 					while (itr2.hasNext()) {
 						RcvInvoice x = (RcvInvoice) itr2.next();
 						RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
-						//itemId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCH_ITEMS", conn.getConnection());
-						//o.setIdentifier(itemId);
+						// itemId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCH_ITEMS",
+						// conn.getConnection());
+						// o.setIdentifier(itemId);
 						o.setBatchId(batchId);
 						o.setControlCode(x.getControlCode());
 						o.setCreatedBy(userName);
@@ -342,6 +374,14 @@ public class SendRcvInvoicesAsync {
 		}
 	}
 	
+	
+	/**
+	* 
+	* @param da
+	* @param invoiceId
+	* @param conn
+	* @return
+	*/
 	private DocumentoElectronico mapAuxDocToEd ( TmpFactuDE_A da, long invoiceId, Connection conn ) {
 		//System.out.println("Cargando documento auxiliar: " + da.getDE().getId());
 		DocumentoElectronico DE = new DocumentoElectronico();
@@ -588,7 +628,7 @@ public class SendRcvInvoicesAsync {
 		gCamCond.setiCondOpe(TiCondOpe.getByVal(co.getiCondOpe()));
 
 		// Operciones contado
-		//System.out.println("condicion operacion: " + co.getiCondOpe());
+		// System.out.println("condicion operacion: " + co.getiCondOpe());
 		if (co.getiCondOpe() == CONTADO) {
 			if (co.getTrmList() != null) {
 				codePlace = "Asignar gPaConEIni";
@@ -713,10 +753,10 @@ public class SendRcvInvoicesAsync {
 		gDtipDE.setgCamCond(gCamCond);
 
 		/**
-         +-----------------------------------------------------------------------------+
-         | gCamItem - Items de la operacion                                            |
-         +-----------------------------------------------------------------------------+
-		 */
+        +-----------------------------------------------------------------------------+
+        | gCamItem - Items de la operacion                                            |
+        +-----------------------------------------------------------------------------+
+		*/
 		codePlace = "Asignar lista items";
 		List<TgCamItem> gCamItemList = new ArrayList<>();
 		ArrayList<TmpFactuDE_E8> im = da.getgTipDE().getItemsList();
@@ -896,402 +936,4 @@ public class SendRcvInvoicesAsync {
 		}
 	}
 
-	
-	public ApplicationMessage queryBatches ( String trxType, 
-			                                 java.util.Date trxDate ) throws SifenException {
-		ApplicationMessage am = new ApplicationMessage();
-	    Connection conn =  null;
-	    long batchId = 0;
-	    String batchNo = null;
-	    int itemsQty = 0;
-	    java.util.Date fromDate;
-	    java.util.Date toDate;	
-		int itemsCount = 0;
-	    int batchesCount = 0;
-	    int approvedCount = 0;
-	    int rejectedCount = 0; 
-
-		// establecer la configuracion Sifen
-		try {
-			setupSifenConfig();
-		} catch ( SifenException e1 ) {
-			am.setMessage("SEND-INV", "No se ha podido establecer la configuracion Sifen", ApplicationMessage.ERROR);
-			return am;
-		} catch ( Exception e2 ) {
-			am.setMessage("SEND-INV", "Configuracion Sifen: " + e2.getMessage(), ApplicationMessage.ERROR);    	    	
-		}
-
-        try {
-		    conn = Util.getConnection();
-		    if (conn == null) {
-				am.setMessage("DB-CONN", "No se ha podido establecer la conexion con la base de datos", ApplicationMessage.ERROR);
-		        return am;
-		    }
-		} catch ( Exception e ) {
-			am.setMessage("DB-CONN", "No se ha podido establecer la conexion con la base de datos", ApplicationMessage.ERROR);
-			return am;
-		}
-
-        fromDate = trxDate;
-        toDate = UtilPOS.addDaysToDate(fromDate, 1);
-        System.out.println("********Buscando lotes: " + trxType + " - " + fromDate + " - " + toDate);
-        ArrayList<RcvTrxEbBatch> batches = RcvTrxEbBatchesDAO.getNotQueriedList(trxType, fromDate, toDate);
-        
-        if (batches != null) {
-        	    Iterator itr1 = batches.iterator();
-        	    while (itr1.hasNext()) {
-        	    	    RcvTrxEbBatch x = (RcvTrxEbBatch) itr1.next();
-        	    	    batchesCount++;
-        	    	    batchId = x.getIdentifier();
-        	    	    batchNo = x.getBatchNumber();
-        	    	    itemsQty = x.getItemsQty();
-        	    		// invocar los servicios de Sifen para el envio de la consulta del lote
-        	    		System.out.println("Enviando consulta lote...");
-        	    		RespuestaConsultaLoteDE ret = Sifen.consultaLoteDE(batchNo);
-        	    		//System.out.println(ret.toString());
-        	    		//System.out.println("codEstado: " + ret.getCodigoEstado() + " dCodRes: " + ret.getdCodRes() + " dMsgRes: " + ret.getdMsgRes());
-        	    		//System.out.println(ret.getRespuestaBruta().toString());
-
-        	    		//System.out.println("1");
-        	    		JacksonXmlModule module = new JacksonXmlModule();
-        	            //System.out.println("2");
-        	    		module.setDefaultUseWrapper(false);
-        	    		//System.out.println("3");
-        	    		XmlMapper xmlMapper = new XmlMapper(module);
-        	    		
-        	    		Envelope tmp = null;
-        	    		try {
-        	    			tmp = xmlMapper.readValue(ret.getRespuestaBruta(), Envelope.class);
-     	    		} catch (JsonProcessingException e) {
-        	    			//throw new RuntimeException(e);
-        	    			e.printStackTrace();
-     	    		}   
-        	    		if (tmp != null) {
-        	    			try {
-        	    			    ArrayList<gResProcLote> deRest = (ArrayList<gResProcLote>) tmp.getBody().getrResEnviConsLoteDe().getgResProcLote();
-        	    			    
-        	    			    Iterator itr2 = deRest.iterator();
-        	    			    while (itr2.hasNext()) {
-        	    				    gResProcLote r = (gResProcLote) itr2.next();
-        	    				    System.out.println("ID: " + r.getId() + " | " +
-        	    			                           "Estado: " + r.getdEstRes() + " | " +
-        	    					      	           "Cod. Rpta.: " + r.getgResProc().getdCodRes() + " | " +
-        	    					    	               "Msj. Rpta.: " + r.getgResProc().getdMsgRes() );
-        	                       //System.out.println("8");
-        	    				   // actualizar el item de lote con los datos de la respuesta
-        	    				    RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
-        	    			        o.setBatchId(batchId);
-        	    				    o.setControlCode(r.getId());
-        	    				    o.setResultCode(r.getgResProc().getdCodRes());
-        	    				    o.setResultMessage(r.getgResProc().getdMsgRes());
-        	    				    o.setResultStatus(r.getdEstRes());
-        	    				    o.setResultTxNumber(r.getdProtAut());
-        	    				    RcvTrxEbBatchItemsDAO.updateRow(o, conn);
-        	    				    itemsCount++;
-        	    				    if (r.getdEstRes().equalsIgnoreCase("APROBADO") == true) {
-        	    					    approvedCount++;
-        	    				    } else {
-        	    					    rejectedCount++;
-        	    				    }
-        	    			    }
-        	    			    // actualizar el indicador de estado consultado del lote
-        	    			    if (itemsCount >= itemsQty) {
-        	    				    RcvTrxEbBatchesDAO.updateQueriedFlag(batchId, conn);
-        	    			    }
-        	    		    } catch (Exception ex) {
-        	    			    ex.printStackTrace();
-        	    			    am.setMessage("MSG-DECODE", "No se ha podido recibir el mensaje del servicio externo", ApplicationMessage.ERROR);
-        	    			    return am;
-        	    		    }
-        	        }
-        	    }
-        }
-        		
-		String msgText = "Lotes consultados: " + batchesCount + " | Documentos aprobados: " + approvedCount + " | Documentos rechazados: "+ rejectedCount;
-		am.setMessage("QUERY-BATCH", msgText, ApplicationMessage.MESSAGE);
-		return am;
-	}
-
-	public DocumentoElectronico queryCDC ( String controlCode, long transactionId, String txNumber ) throws SifenException {
-		// establecer la configuracion Sifen
-		try {
-			setupSifenConfig();
-		} catch ( SifenException e1 ) {
-			return null;
-		} catch ( Exception e2 ) {
-			return null;    	    	
-		}
-	    RespuestaConsultaDE ret = Sifen.consultaDE(controlCode);
-	    System.out.println(ret.toString());
-	    System.out.println("CODIGO ESTADO...: " + ret.getCodigoEstado());
-	    System.out.println("CODIGO RESULTADO: " + ret.getdCodRes());
-	    System.out.println("MSJ RESPUESTA...: " + ret.getdMsgRes());
-	    System.out.println("RESP. BRUTA.....: " + ret.getRespuestaBruta());
-	    DocumentoElectronico DE = ret.getxContenDE().getDE();
-	    System.out.println("Tipo....: " + DE.getgTimb().getiTiDE().getDescripcion());
-	    System.out.println("Numero..: " + DE.getgTimb().getdEst() + "-" + DE.getgTimb().getdPunExp() + "-" + DE.getgTimb().getdNumDoc());
-	    System.out.println("Receptor: " + DE.getgDatGralOpe().getgDatRec().getdNomRec());
-				
-	    String usrName = UserAttributes.userName;
-	    long orgId = UserAttributes.userOrg.getIDENTIFIER();
-	    long unitId = UserAttributes.userUnit.getIDENTIFIER();
-	    ApplicationMessage am = checkSendingLog ( DE, transactionId, txNumber, usrName, orgId, unitId );
-	    return DE;
-	}
-	
-	public ApplicationMessage querySingleBatch ( String batchNumber ) throws SifenException {
-		ApplicationMessage am = new ApplicationMessage();
-		Connection conn =  null;
-		long batchId = 0;
-		int itemsCount = 0;
-		int itemsQty = 0;
-		String batchNo = null;
-
-		try {
-			conn = Util.getConnection();
-			if (conn == null) {
-				am.setMessage("DB-CONN", "No se ha podido establecer la conexion con la base de datos", ApplicationMessage.ERROR);
-				return am;
-			}
-		} catch ( Exception e ) {
-			am.setMessage("DB-CONN", "No se ha podido establecer la conexion con la base de datos", ApplicationMessage.ERROR);
-			return am;
-		}
-
-		RcvTrxEbBatch b = RcvTrxEbBatchesDAO.getRowByNumber(batchNumber);
-
-		if (b != null) {
-			batchId = b.getIdentifier();
-			boolean existsItems = RcvTrxEbBatchItemsDAO.existsNoQueriedItems(batchId);
-			if (existsItems == true) {
-				// establecer la configuracion Sifen
-				try {
-					setupSifenConfig();
-				} catch ( SifenException e1 ) {
-					am.setMessage("SEND-INV", "No se ha podido establecer la configuracion Sifen", ApplicationMessage.ERROR);
-					return am;
-				} catch ( Exception e2 ) {
-					am.setMessage("SEND-INV", "Configuracion Sifen: " + e2.getMessage(), ApplicationMessage.ERROR);    	    	
-				}
-
-			    batchNo = b.getBatchNumber();
-			    itemsQty = b.getItemsQty();
-			    // invocar los servicios de Sifen para el envio de la consulta del lote
-			    System.out.println("Enviando consulta de lote " + batchNo + "...");
-			    RespuestaConsultaLoteDE ret = Sifen.consultaLoteDE(batchNo);
-			    //System.out.println(ret.toString());
-			    //System.out.println("codEstado: " + ret.getCodigoEstado() + " dCodRes: " + ret.getdCodRes() + " dMsgRes: " + ret.getdMsgRes());
-			    //System.out.println(ret.getRespuestaBruta().toString());
-
-			    //System.out.println("1");
-			    JacksonXmlModule module = new JacksonXmlModule();
-			    //System.out.println("2");
-			    module.setDefaultUseWrapper(false);
-			    //System.out.println("3");
-			    XmlMapper xmlMapper = new XmlMapper(module);
-
-			    try {
-				    //System.out.println("4");
-				    Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(), Envelope.class);
-				    //System.out.println("5");
-				    rResEnviConsLoteDe batchResp = tmp.getBody().getrResEnviConsLoteDe();
-				    if (batchResp != null) {
-				    	    System.out.println(batchResp.dCodResLot + " - " + batchResp.dMsgResLot + " - " + batchResp.dFecProc);
-				    }
-				    ArrayList<gResProcLote> deRest = (ArrayList<gResProcLote>) tmp.getBody().getrResEnviConsLoteDe().getgResProcLote();
-				    if (deRest != null) {
-				        Iterator itr2 = deRest.iterator();
-				        while (itr2.hasNext()) {
-					        //System.out.println("7");
-					        gResProcLote r = (gResProcLote) itr2.next();
-					        System.out.println("ID: " + r.getId() + " | " +
-							    	"Estado: " + r.getdEstRes() + " | " +
-							  	"Cod. Rpta.: " + r.getgResProc().getdCodRes() + " | " +
-								"Msj. Rpta.: " + r.getgResProc().getdMsgRes() );
-					        //System.out.println("8");
-					        // actualizar el item de lote con los datos de la respuesta
-					        RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
-					        o.setBatchId(batchId);
-					        o.setControlCode(r.getId());
-					        o.setResultCode(r.getgResProc().getdCodRes());
-					        o.setResultMessage(r.getgResProc().getdMsgRes());
-					        o.setResultStatus(r.getdEstRes());
-					        o.setResultTxNumber(r.getdProtAut());
-					        RcvTrxEbBatchItemsDAO.updateRow(o, conn);
-					        itemsCount++;
-				        }
-    	    			        // actualizar el indicador de estado consultado del lote
-    	    			        if (itemsCount >= itemsQty) {
-    	    				        RcvTrxEbBatchesDAO.updateQueriedFlag(batchId, conn);
-    	    			        }
-				    } else {
-					    am.setMessage("MSG-DECODE", "No se ha podido obtener la lista de transacciones del lote", ApplicationMessage.ERROR);
-					    return am;				    	
-				    }
-			
-			    } catch (JsonProcessingException e) {
-				    //throw new RuntimeException(e);
-				    e.printStackTrace();
-				    am.setMessage("MSG-DECODE", "No se ha podido recibir el mensaje del servicio externo", ApplicationMessage.ERROR);
-				    return am;
-			    } catch (Exception ex) {
-				    ex.printStackTrace();
-				    am.setMessage("MSG-DECODE", "No se ha podido recibir el mensaje del servicio externo", ApplicationMessage.ERROR);
-				    return am;
-			    }
-		    }
-		}
-	    am.setMessage("QUERY-BATCH", "Actividad realizada con exito", ApplicationMessage.MESSAGE);
-	    return am;
-	}
-	
-	public ApplicationMessage queryBatchesList ( String trxType, 
-			                                    java.util.Date fromDate, 
-			                                    java.util.Date toDate ) throws SifenException {
-		ApplicationMessage am = new ApplicationMessage();
-		Connection conn =  null;
-		long batchId = 0;
-		String batchNo = null;
-
-		// establecer la configuracion Sifen
-		try {
-			setupSifenConfig();
-		} catch ( SifenException e1 ) {
-			am.setMessage("SEND-INV", "No se ha podido establecer la configuracion Sifen", ApplicationMessage.ERROR);
-			return am;
-		} catch ( Exception e2 ) {
-			am.setMessage("SEND-INV", "Configuracion Sifen: " + e2.getMessage(), ApplicationMessage.ERROR);    	    	
-		}
-
-		try {
-			conn = Util.getConnection();
-			if (conn == null) {
-				am.setMessage("DB-CONN", "No se ha podido establecer la conexion con la base de datos", ApplicationMessage.ERROR);
-				return am;
-			}
-		} catch ( Exception e ) {
-			am.setMessage("DB-CONN", "No se ha podido establecer la conexion con la base de datos", ApplicationMessage.ERROR);
-			return am;
-		}
-
-		ArrayList<RcvTrxEbBatch> batches = RcvTrxEbBatchesDAO.getList(trxType, null, fromDate, toDate);
-		if (batches != null) {
-			Iterator itr1 = batches.iterator();
-			while (itr1.hasNext()) {
-				RcvTrxEbBatch x = (RcvTrxEbBatch) itr1.next();
-				batchId = x.getIdentifier();
-				boolean existsItems = RcvTrxEbBatchItemsDAO.existsNoQueriedItems(batchId);
-				if (existsItems == true) {
-				    batchNo = x.getBatchNumber();
-				    // invocar los servicios de Sifen para el envio de la consulta del lote
-				    System.out.println("Enviando consulta lote...");
-				    RespuestaConsultaLoteDE ret = Sifen.consultaLoteDE(batchNo);
-				    //System.out.println(ret.toString());
-				    //System.out.println("codEstado: " + ret.getCodigoEstado() + " dCodRes: " + ret.getdCodRes() + " dMsgRes: " + ret.getdMsgRes());
-				    //System.out.println(ret.getRespuestaBruta().toString());
-
-				    //System.out.println("1");
-				    JacksonXmlModule module = new JacksonXmlModule();
-				    //System.out.println("2");
-				    module.setDefaultUseWrapper(false);
-				    //System.out.println("3");
-				    XmlMapper xmlMapper = new XmlMapper(module);
-
-				    try {
-					    //System.out.println("4");
-					    Envelope tmp = xmlMapper.readValue(ret.getRespuestaBruta(), Envelope.class);
-					    //System.out.println("5");
-					    ArrayList<gResProcLote> deRest = (ArrayList<gResProcLote>) tmp.getBody().getrResEnviConsLoteDe().getgResProcLote();
-					    Iterator itr2 = deRest.iterator();
-					    while (itr2.hasNext()) {
-						    //System.out.println("7");
-						    gResProcLote r = (gResProcLote) itr2.next();
-						    System.out.println("ID: " + r.getId() + " | " +
-								"Estado: " + r.getdEstRes() + " | " +
-								"Cod. Rpta.: " + r.getgResProc().getdCodRes() + " | " +
-								"Msj. Rpta.: " + r.getgResProc().getdMsgRes() );
-						    //System.out.println("8");
-						    // actualizar el item de lote con los datos de la respuesta
-						    RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
-						    o.setBatchId(batchId);
-						    o.setControlCode(r.getId());
-						    o.setResultCode(r.getgResProc().getdCodRes());
-						    o.setResultMessage(r.getgResProc().getdMsgRes());
-						    o.setResultStatus(r.getdEstRes());
-						    o.setResultTxNumber(r.getdProtAut());
-						    RcvTrxEbBatchItemsDAO.updateRow(o, conn);
-					    }
-				    } catch (JsonProcessingException e) {
-					    //throw new RuntimeException(e);
-					    e.printStackTrace();
-					    am.setMessage("MSG-DECODE", "No se ha podido recibir el mensaje del servicio externo", ApplicationMessage.ERROR);
-					    return am;
-				    } catch (Exception ex) {
-					    ex.printStackTrace();
-					    am.setMessage("MSG-DECODE", "No se ha podido recibir el mensaje del servicio externo", ApplicationMessage.ERROR);
-					    return am;
-				    }
-				}
-			}
-		}
-
-
-		am.setMessage("QUERY-BATCH", "Actividad realizada con exito", ApplicationMessage.MESSAGE);
-		return am;
-	}
-
-	private ApplicationMessage checkSendingLog ( DocumentoElectronico DE, 
-			                                     long transactionId, 
-			                                     String txNumber, 
-			                                     String usrName, 
-			                                     long orgId, 
-			                                     long unitId ) {
-		ApplicationMessage am;
-		Connection conn = null;
-		String cdc = DE.getId();
-		String xmlFile = String.valueOf(transactionId) + ".xml";
-		//
-		try {
-	        // obtener una conexion a la base de datos
-	        conn = Util.getConnection();
-	        if (conn == null) {
-		        am = new ApplicationMessage();
-		        am.setMessage("CHK-ITM-LOG", "No se ha podido obtener conexion a la base de datos", ApplicationMessage.ERROR);
-		        return am;
-	        }
-	        //
-		    boolean approvedFlag = RcvTrxEbBatchItemsDAO.existsApprovedLog(cdc);
-		    // en este punto, si no existe ningun registro de log correspondiente a la aprobacion
-		    // del documento, es porque no se pudo realizar en su momento la consulta del lote,
-		    // por tanto se debe registrar el log correspondiente
-		    if (approvedFlag == false) {
-		        RcvTrxEbBatchItem o = new RcvTrxEbBatchItem();
-			    long itemId = UtilitiesDAO.getNextval("SQ_RCV_TRX_EB_BATCH_ITEMS", conn);
-		        o.setBatchId(-1);
-		        o.setControlCode(cdc);
-		        o.setCreatedBy(usrName);
-		        o.setCreatedOn(new java.util.Date());
-		        o.setIdentifier(itemId);
-		        o.setOrgId(orgId);
-		        o.setResultCode(260);
-		        o.setResultMessage("Aprobado");
-		        o.setResultStatus("Aprobado");
-		        o.setResultTxNumber(0);
-		        o.setTransactionId(transactionId);
-		        o.setTxNumber(txNumber);
-		        o.setUnitId(unitId);
-				o.setXmlFile(String.valueOf(transactionId) + ".xml");
-		        o.setQrCode(DE.getEnlaceQR());
-		        RcvTrxEbBatchItemsDAO.addRow(o, conn);
-		    }
-		    return null;
-        } catch (Exception e) {
-        	    e.printStackTrace();
-		    am = new ApplicationMessage();
-		    am.setMessage("CHK-ITM-LOG", "Error al crear log: " + e.getMessage(), ApplicationMessage.ERROR);
-		    return am;
-        } finally {
-			Util.closeJDBCConnection(conn);
-        }
-	}
 }

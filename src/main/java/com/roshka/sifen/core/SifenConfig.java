@@ -193,7 +193,7 @@ public class SifenConfig {
         } catch (IOException e) {
             throw SifenExceptionUtil.invalidConfiguration("El archivo utilizado no existe, no pudo ser abierto o es un directorio.");
         }
-        return SifenConfig.cargarConfiguracion(props);
+       return SifenConfig.cargarConfiguracion(props);
     }
 
     /**

@@ -1,7 +1,13 @@
 package com.roshka.sifen.addon;
 
-public class gResProc {
-    public int dCodRes;
+import java.io.Serializable;
+
+
+@SuppressWarnings("serial")
+public class gResProc implements Serializable
+{
+
+	public int dCodRes;
     public String dMsgRes;
 
     public int getdCodRes() {

@@ -1,8 +1,11 @@
 package com.roshka.sifen.addon;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class gResProcEVe {
+@SuppressWarnings("serial")
+public class gResProcEVe implements Serializable 
+{
     private String dEstRes;
     private int dProtAut;
     // Corresponde al id autogenerado por el emisor, para identificar cada evento

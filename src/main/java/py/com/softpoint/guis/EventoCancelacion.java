@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 
 import com.roshka.sifen.core.exceptions.SifenException;
 
+import py.com.softpoint.context.ContextDataApp;
 import util.CheckStatusDETools;
 import util.FondoSP;
 import util.ImageTools;
@@ -54,7 +55,7 @@ public class EventoCancelacion extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 600);
 		setResizable(false);setTitle("Evento CANCELACION");
-		setAlwaysOnTop(true);
+		setAlwaysOnTop(false);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		contentPane = new FondoSP();//new JPanel();
@@ -127,8 +128,13 @@ public class EventoCancelacion extends JFrame {
 		etRespose = new JTextPane();
 		etRespose.setEditable(false);
 		scroll = new JScrollPane(etRespose);
-		scroll.setBounds(22, 172, 766, 373);
+		scroll.setBounds(22, 172, 766, 362);
 		contentPane.add(scroll);
+		
+		JLabel lblUserName = new JLabel();
+		lblUserName.setBounds(22, 540, 388, 24);
+		lblUserName.setText(ContextDataApp.getDataContext().getNombre_Completo());
+		contentPane.add(lblUserName);
 		
 		this.setLocationRelativeTo(null);
 		

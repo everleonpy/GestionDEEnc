@@ -1,6 +1,10 @@
 package com.roshka.sifen.addon;
 
-public class rRetEnviDe {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class rRetEnviDe implements Serializable 
+{
     public rProtDe rProtDe;
     public String ns2;
     public String text;

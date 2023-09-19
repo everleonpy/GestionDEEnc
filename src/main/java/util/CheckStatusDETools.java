@@ -1,8 +1,10 @@
 package util;
 
+import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.roshka.sifen.Sifen;
 import com.roshka.sifen.addon.Envelope;
+import com.roshka.sifen.addon.gResProcLote;
 import com.roshka.sifen.core.SifenConfig;
 import com.roshka.sifen.core.beans.EventosDE;
 import com.roshka.sifen.core.beans.response.RespuestaConsultaDE;
@@ -22,7 +24,11 @@ import java.io.Writer;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -42,6 +48,7 @@ public class CheckStatusDETools
 	{
 		if( fileprop != null ) 
 		{
+			System.out.println("FILE_PROP : "+fileprop);
 			sifenConfig = SifenConfig.cargarConfiguracion(fileprop);
 			Sifen.setSifenConfig(sifenConfig);
 		}
@@ -56,8 +63,9 @@ public class CheckStatusDETools
 	* @throws ParserConfigurationException 
 	* @throws SAXException 
 	* @throws IOException 
+	 * @throws JAXBException 
 	*/
-	public String checkLote(String nroLote) throws SifenException, IOException, SAXException, ParserConfigurationException 
+	public String checkLote(String nroLote) throws SifenException, IOException, SAXException, ParserConfigurationException, JAXBException 
 	{
 		RespuestaConsultaLoteDE resp = Sifen.consultaLoteDE(nroLote);
 		
@@ -66,19 +74,35 @@ public class CheckStatusDETools
 				//String xml = resp.getRespuestaBruta();
 				//return format(xml, true);
 				//System.out.println("RESPUESTA : "+xml);
-				
-				XmlMapper xmlMapper = new XmlMapper();
+								
+				JacksonXmlModule module = new JacksonXmlModule();
+			    module.setDefaultUseWrapper(false);
+				XmlMapper xmlMapper = new XmlMapper(module);
 				Envelope tmp = xmlMapper.readValue(resp.getRespuestaBruta(),Envelope.class);
 				StringBuilder str =  new StringBuilder();
 				
 				if( tmp.getBody().getrResEnviConsLoteDe() != null) {
-					str.append(" ** Nro de Lote : "+nroLote+" \n");
-				    str.append("*--------------------------------------------------------------------\n");
+					str.append(" _______________________________________________________________________\n");
+					str.append("| Nro de Lote : "+nroLote+" \n");
+				    str.append("|_______________________________________________________________________\n");
 				    str.append("| Codigo de Respuesta  : "+tmp.getBody().getrResEnviConsLoteDe()
 				    										.dCodResLot+"\n");
 				    str.append("| Mensaje              : "+tmp.getBody().getrResEnviConsLoteDe()
 				    										.getdMsgResLot()+"\n");
-				    str.append("*--------------------------------------------------------------------\n");
+				    
+				    List<gResProcLote> lst = tmp.getBody().getrResEnviConsLoteDe().getgResProcLote();
+				    for (Iterator<gResProcLote> iterator = lst.iterator(); iterator.hasNext();) 
+				    {
+						gResProcLote rsp = (gResProcLote) iterator.next();
+						str.append("____________________________________________________________________ \n");
+						str.append("| CDC : "+rsp.getId() +"\n");
+						str.append("| Cod. Respuesta : "+rsp.getgResProc().getdCodRes() +"\n");
+						str.append("| Estado         : "+rsp.getgResProc().getdMsgRes() +"\n");
+						str.append("|___________________________________________________________________ \n");
+						
+					}
+				    
+				    //str.append("*--------------------------------------------------------------------\n");
 				}
 		     
 		     return str.toString();
@@ -163,18 +187,28 @@ public class CheckStatusDETools
 		{
 			//String xml = resp.getRespuestaBruta();
 			//return format(xml, true);
-			XmlMapper xmlMapper = new XmlMapper();
-			Envelope tmp = xmlMapper.readValue(resp.getRespuestaBruta(),Envelope.class);
+			Map<String, String> data  = new HashMap<String, String>();
+			
+			
+			data.put("ns2:dFecProc", "ns2:dFecProc");
+			data.put("ns2:dCodRes", "ns2:dCodRes");
+			data.put("ns2:dMsgRes", "ns2:dMsgRes");
+			data.put("ns2:xContenDE", "ns2:xContenDE");
+			data  = XmlTools.getNodeFromString(resp.getRespuestaBruta(), "ns2:rEnviConsDeResponse", data);
+			
+			String QR = XmlTools.getNode(resp.getRespuestaBruta(), "dCarQR");
 			
 			StringBuilder str =  new StringBuilder();
-			str.append(" ** Nro de CDC : "+cdc+" \n");
-		    str.append("*--------------------------------------------------------------------\n");
-		    str.append("| Codigo de Respuesta  : "+tmp.getBody().getrRetEnviDe().getrProtDe()
-		    										.getgResProc().getdCodRes()+"\n");
-		    str.append("| Mensaje              : "+tmp.getBody().getrRetEnviDe().getrProtDe()
-		    										.getgResProc().getdMsgRes()+"\n");
-		    str.append("*--------------------------------------------------------------------\n");
-	     
+			str.append("* Nro de CDC : "+cdc+" \n");
+		    str.append("|=====================================================================-\n");
+		    str.append("| Codigo de Respuesta  : "+data.get("ns2:dCodRes")+"\n");
+		    str.append("| Mensaje              : "+data.get("ns2:dMsgRes")+"\n");
+		    str.append("*======================================================================\n");
+		    str.append("| QR : "+StringTools.cortarString(QR, 80)+" \n");
+		    str.append("*======================================================================-\n");
+		    
+		    return str.toString();
+			
 		}
 		
 		return "*** No hay respuesta desde el SIFEN ****";
@@ -251,14 +285,14 @@ public class CheckStatusDETools
 	}
 	
 	/**
-	 * Formate un string xml para visualizarlo
-	 * @param xml
-	 * @param ommitXmlDeclaration
-	 * @return
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 */
+	* Formate un string xml para visualizarlo
+	* @param xml
+	* @param ommitXmlDeclaration
+	* @return
+	* @throws IOException
+	* @throws SAXException
+	* @throws ParserConfigurationException
+	*/
 	@SuppressWarnings("unused")
 	private static String format(String xml, Boolean ommitXmlDeclaration)
 			throws IOException, SAXException, ParserConfigurationException 
@@ -275,8 +309,6 @@ public class CheckStatusDETools
 		serializer.serialize(doc);
 		return outxml.toString();
 	}
-	
-	
 	
 	
 }

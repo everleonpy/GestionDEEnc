@@ -24,7 +24,6 @@ import dao.Util;
 public class TmpFactuDE_ADTO 
 {
 	
-	
 	/**
 	* 
 	* @param feche
@@ -73,7 +72,7 @@ public class TmpFactuDE_ADTO
 			        e.printStackTrace(new PrintWriter(sw));
 					JOptionPane.showMessageDialog(null, sw.toString(), " [ ERROR ] ", 
 														JOptionPane.ERROR_MESSAGE);
-					//e.printStackTrace();
+					
 					
 				} finally { 
 					

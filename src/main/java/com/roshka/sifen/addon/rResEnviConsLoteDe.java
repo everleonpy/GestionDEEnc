@@ -4,12 +4,13 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+@SuppressWarnings("serial")
 public class rResEnviConsLoteDe implements Serializable
 {
-    public Date dFecProc;
+
+	public Date dFecProc;
     public int dCodResLot;
     public String dMsgResLot;
-
     public List<gResProcLote> gResProcLote;
     public String ns2;
     public String text;

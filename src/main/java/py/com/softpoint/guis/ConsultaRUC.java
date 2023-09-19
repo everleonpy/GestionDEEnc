@@ -21,12 +21,18 @@ import org.xml.sax.SAXException;
 
 import com.roshka.sifen.core.exceptions.SifenException;
 
+import py.com.softpoint.context.ContextDataApp;
 import util.CheckStatusDETools;
 import util.FondoSP;
 import util.ImageTools;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+* 
+* @author eleon
+*
+*/
 public class ConsultaRUC extends JFrame {
 
 	private static final long serialVersionUID = -9193761440589419547L;
@@ -57,8 +63,8 @@ public class ConsultaRUC extends JFrame {
 	
 	/**
 	* Create the frame.
-	 * @throws IOException 
-	 * @throws SifenException 
+	* @throws IOException 
+	* @throws SifenException 
 	*/
 	public ConsultaRUC(String pFile, MainMenu mainMenu) throws IOException, SifenException 
 	{
@@ -69,8 +75,8 @@ public class ConsultaRUC extends JFrame {
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 600);
-		setResizable(false);setTitle("Consultar RUC");
-		setAlwaysOnTop(true);
+		setResizable(false);setTitle("Consultar RUC ");
+		setAlwaysOnTop(false);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		contentPane = new FondoSP();//new JPanel();
@@ -126,8 +132,12 @@ public class ConsultaRUC extends JFrame {
 		btnExit.setBounds(686, 42, 102, 40);
 		contentPane.add(btnExit);
 		
+		JLabel lblUserName = new JLabel();
+		lblUserName.setBounds(22, 540, 388, 24);
+		lblUserName.setText(ContextDataApp.getDataContext().getNombre_Completo());
+		contentPane.add(lblUserName);
+		
 		this.setLocationRelativeTo(null);
 		
 	}
-
 }

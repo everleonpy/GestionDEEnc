@@ -17,6 +17,8 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.border.EmptyBorder;
 import com.roshka.sifen.core.exceptions.SifenException;
+
+import py.com.softpoint.context.ContextDataApp;
 import util.CheckStatusDETools;
 import util.DateTools;
 import util.FondoSP;
@@ -51,7 +53,6 @@ public class CheckStatusDE extends JFrame
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 600);
 		setResizable(false);setTitle("Verificar Status de los DE");
-		setAlwaysOnTop(true);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		contentPane = new FondoSP();//new JPanel();
@@ -112,6 +113,11 @@ public class CheckStatusDE extends JFrame
 		btnExit.setIcon(new ImageIcon(imgTools.getImageFromFile("exit.png")));
 		btnExit.setBounds(686, 42, 102, 40);
 		contentPane.add(btnExit);
+		
+		JLabel lblUserName = new JLabel();
+		lblUserName.setBounds(22, 540, 388, 24);
+		lblUserName.setText(ContextDataApp.getDataContext().getNombre_Completo());
+		contentPane.add(lblUserName);
 		
 		this.setLocationRelativeTo(null);
 		

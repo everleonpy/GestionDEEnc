@@ -7,9 +7,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import com.roshka.sifen.core.exceptions.SifenException;
+
+import py.com.softpoint.context.ContextDataApp;
 import util.CheckStatusDETools;
 import util.FondoSP;
 import util.ImageTools;
@@ -72,7 +75,7 @@ public class ConsultaLote extends JFrame {
 			mainMenu.dispose();
 			setResizable(false);
 			setTitle("Consulta LOTE");
-			setAlwaysOnTop(true);
+			setAlwaysOnTop(false);
 			setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 			setBounds(100, 100, 800, 600);
 			contentPane = new FondoSP();//new JPanel();
@@ -98,7 +101,7 @@ public class ConsultaLote extends JFrame {
 					try 
 					{
 						etRespose.setText(statusTools.checkLote(etNroLOTE.getText().trim()));
-					} catch (SifenException | IOException | SAXException | ParserConfigurationException ex) {
+					} catch (SifenException | IOException | SAXException | ParserConfigurationException | JAXBException ex) {
 						
 						  StringWriter sw = new StringWriter();
 				          ex.printStackTrace(new PrintWriter(sw));
@@ -132,6 +135,11 @@ public class ConsultaLote extends JFrame {
 			});
 			btnExit.setBounds(686, 42, 102, 40);
 			contentPane.add(btnExit);
+			
+			JLabel lblUserName = new JLabel();
+			lblUserName.setBounds(22, 540, 388, 24);
+			lblUserName.setText(ContextDataApp.getDataContext().getNombre_Completo());
+			contentPane.add(lblUserName);
 			
 			this.setLocationRelativeTo(null);
 		//}

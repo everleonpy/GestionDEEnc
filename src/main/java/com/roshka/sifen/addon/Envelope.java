@@ -1,6 +1,11 @@
 package com.roshka.sifen.addon;
 
-public class Envelope {
+import java.io.Serializable;
+
+@SuppressWarnings("serial")
+public class Envelope  implements Serializable
+{
+	
     public Object Header;
     public Body Body;
     public String env;

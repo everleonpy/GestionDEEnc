@@ -17,8 +17,8 @@ public class RespuestaConsultaDE extends BaseResponse {
     private TxContenDE xContenDE;
 
     /**
-     * Método interno, no usar.
-     */
+    * Método interno, no usar.
+    */
     @Override
     public void setValueFromChildNode(Node value) throws SifenException {
         if (value.getLocalName().equals("dFecProc")) {

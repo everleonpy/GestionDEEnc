@@ -20,6 +20,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.roshka.sifen.core.exceptions.SifenException;
 
+import py.com.softpoint.context.ContextDataApp;
 import util.CheckStatusDETools;
 import util.DateTools;
 import util.FondoSP;
@@ -68,7 +69,7 @@ public class EnvioFE extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 600);
 		setResizable(false);setTitle(" Envio de Facturas Electronicas ");
-		setAlwaysOnTop(true);
+		setAlwaysOnTop(false);
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
 		contentPane = new FondoSP();//new JPanel();
@@ -133,6 +134,11 @@ public class EnvioFE extends JFrame {
 		btnExit.setIcon(new ImageIcon(imgTools.getImageFromFile("exit.png")));
 		btnExit.setBounds(686, 42, 102, 40);
 		contentPane.add(btnExit);
+		
+		JLabel lblUserName = new JLabel();
+		lblUserName.setBounds(22, 540, 388, 24);
+		lblUserName.setText(ContextDataApp.getDataContext().getNombre_Completo());
+		contentPane.add(lblUserName);
 		
 		this.setLocationRelativeTo(null);
 	}

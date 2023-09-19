@@ -1,8 +1,11 @@
 package com.roshka.sifen.addon;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class rResEnviLoteDe {
+@SuppressWarnings("serial")
+public class rResEnviLoteDe implements Serializable 
+{
 	public Date dFecProc;
 	public int dCodRes;
 	public String dMsgRes;

@@ -68,11 +68,11 @@ abstract class BaseRequest {
                 throw new RuntimeException(e);
             }
 
-            String xml = sw.toString();
+           /* String xml = sw.toString();
             System.out.println("**************************** IMPRIMIENDO  XML *************************************");
             System.out.println(xml);
             System.out.println("***********************************************************************************");
-            
+            */
             // ... hasta aqui
             
             // Realizamos la consulta
